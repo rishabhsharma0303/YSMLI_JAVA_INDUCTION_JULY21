@@ -1,0 +1,143 @@
+
+Promise:
+-----------
+
+Ex: let ur kid promise to clean the room....
+
+
+let promiseToCleanTheRoom=new Promise(function(resolved, reject){
+	//cleanning the room
+
+	let isClean=false;
+	if(isClean){
+		resolved('clean');
+	}else{
+		reject('not clean');
+	}
+
+});
+
+promiseToCleanTheRoom.then(function(fromResolve){
+	console.log('the room is '+ fromResolve);
+}).catch(function(fromReject){
+	console.log('the room is '+ fromReject);
+});
+
+
+With arrow function:
+--------------------
+
+promiseToCleanTheRoom.then(fromResolve=>console.log('the room is '+ fromResolve)).catch(fromReject=>
+	console.log('the room is '+ fromReject)
+);
+
+
+
+Now consider :
+
+	if kid clean the room ==> remove the garbage ==> then win the ice cream
+
+
+let cleanRoom=function(){
+	return new Promise(function(resolve, reject){
+		resolve('clean the room')
+	});
+};
+
+let removeGarbage=function(p){
+	return new Promise( function(resolve, reject){
+		resolve('remove the garbage');
+	});
+}
+
+let winTheIceCream=function(p){
+	return new Promise( function(resolve, reject){
+		resolve('win icecream');
+	});
+}
+//nested promise : once room is clean , remove the garbage and get ice cream
+cleanRoom().then(function(){
+	return removeGarbage();
+}).then(function(){
+	return winTheIceCream();
+}).then(function(){
+	console.log('finished');
+});
+
+
+
+//whatever message we get after fulfilling promise can be attached....
+
+cleanRoom().then(function(result){
+	return removeGarbage(result);
+}).then(function(result){
+	return winTheIceCream(result);
+}).then(function(result){
+	console.log('finished'+ result);
+});
+
+
+
+
+
+
+let cleanRoom=function(){
+	return new Promise(function(resolve, reject){
+		resolve('clean the room')
+	});
+};
+
+let removeGarbage=function(message){
+	return new Promise( function(resolve, reject){
+		resolve(message+ 'remove the garbage');
+	});
+}
+
+let winTheIceCream=function(message){
+	return new Promise( function(resolve, reject){
+		resolve(message+ 'win icecream');
+	});
+}
+
+cleanRoom().then(function(result){
+	return removeGarbage(result);
+}).then(function(result){
+	return winTheIceCream(result);
+}).then(function(result){
+	console.log('finished'+ result);
+});
+
+
+
+
+ //want to do everything in ||, when all are done do something
+Promise.all([cleanRoom(), removeGarbage(), winTheIceCream()]).then(
+	function(){
+		console.log('all finished....');
+	}
+);
+
+//want if u wnat one of them to finished , when all are done do something
+Promise.race([cleanRoom(), removeGarbage(), winTheIceCream()]).then(
+	function(){
+		console.log('all finished....');
+	}
+);
+
+
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

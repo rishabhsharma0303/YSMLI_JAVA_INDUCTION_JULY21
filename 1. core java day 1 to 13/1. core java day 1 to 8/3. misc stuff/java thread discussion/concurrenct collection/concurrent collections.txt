@@ -1,0 +1,331 @@
+Concurrent collections:
+-------------------------
+Need of concurrent collections
+
+	1. traditional collection objects like arraylist, hashmap can be accessed by multiple 
+	threads simultanoeously and hance may be a chance of data inconsistancy problem
+	 and hence are not thread salfe
+
+	2. already existing thread safe collections 
+	( vector, hashtable, synchronizedlist(), synchronizedSet(), synchronizedMap()) 
+	perfromance is not up to the mark
+
+	3. as for every operation even for read, total collection is locked by only 
+	one thread at a time and increase waiting time of threads
+
+	4. Most important problem if one thread is iterating collection and other tries to modify it 
+		immediatly we get ConcurrentModifictionException ( fail fast)
+
+
+	public class MyThread extends Thread{
+		
+			static Vector<String>list=new Vector<String>();
+			
+			public void run(){
+				try{
+					Thread.sleep(2000);
+				}catch(InterruptedException ex){}
+				
+				list.add("D");
+			}
+			public static void main(String[] args) throws InterruptedException {
+				
+				list.add("A");
+				list.add("B");
+				list.add("C");
+				
+				MyThread myThread=new MyThread();
+				myThread.start();
+				
+				Iterator<String> itr=list.iterator();
+				
+				while(itr.hasNext()){
+					System.out.println("main thread iterating...."+ itr.next());
+					Thread.sleep(3000);
+				}
+				
+				
+			}
+		}
+
+
+
+	Difference bw concurrent and Traditional collection
+	---------------------------------------------------
+
+	1. concurrent collection is always thread safe
+	
+	2. when compared with traditional threads safe collection performate is better because differnt locking 
+		mechnism
+	3. while one thread interacting other thread allowed to alter collection in safe manner
+
+
+	Hence concurrent collection never throws ConcurrentModifictionException 
+
+	The important concurrent classes are:
+	-----------------------------------
+
+	1. ConcurrentHashMap
+	2. CopyOnWriteArrayList
+	3. CopyOnWriteArraySet
+
+
+	ConcurrentHashMap
+	------------------
+
+	<<Map>>
+	  |
+	<<ConcurrentMap>>	putIfAbsent(), remove() (redefined), replace() + other method of Maps
+	 |
+       	ConcurrentHashMap
+
+
+
+	1. Object putIfAbsent(Object key , Object val)
+		only if key is not present then only put key, val
+
+
+	2. boolean remove(Object key, Object val) 
+		only if combination of key, value present then remove it
+
+	3. boolean replace(Object key, Object oldVal, Object newVal)
+		only if combination of key, value present then replace with newValue
+
+
+
+	ConcurrentHashMap vs HashMap
+	----------------------------
+	only one lock with HashMap, even if one thread is reading all map is locked!
+
+	for ConcurrentHashMap we have 16 bucket level lock, concurrency level=16
+
+	if concurrency level=8 then 1 lock per 2 bucket level
+
+	if concurrency level=32 then 2 lock per 1 bucket level
+
+
+	Imp points
+	----------
+
+	-> Underlying ds is HashMap
+
+	-> CHM allows concurrent any no of read operation 		and thread safe update operation
+
+	-> to perform read operation thread dont require lock, for update it require lock, a part of map is locked
+
+	-> concurrent update is achived by dividing map into smaller portion
+
+	-> default many read , 16 write operation
+
+	-> null is not allowed for both key and value
+
+	-> CHM do not throw ConucrrentModifitionEx
+
+	
+
+	constructor of CHM
+	------------------
+
+	1. CHM m=new CHM();//default inital cap=16, default fill ration=.75, default concurrency level=16
+
+	1. CHM m=new CHM(int initalCap);
+
+	1. CHM m=new CHM(int initalCap,float fillRation);
+
+	1. CHM m=new CHM(int initalCap,float fillRation, int concurrencyLevel);
+
+	1. CHM m=new CHM(map m);
+	// converting normal map to CHM
+	
+
+
+	Example:
+	----------
+
+		ConcurrentHashMap<Integer, String>map=new ConcurrentHashMap<>();
+		
+		map.put(101,"A");
+		map.put(102,"B");
+		map.putIfAbsent(103,"C");
+		
+		map.remove(101,"D");
+		map.replace(102,"B","X");
+		
+		System.out.println(map);
+
+
+
+	Example: CHM do not throws ConcurrentModifictionException ...
+
+	While main thread iterating map child map updated map
+
+	is the updatation is available to main thread ? No Gurantee..
+
+	---------------------------------------------------
+	HashMap					CHM
+	---------------------------------------------------
+
+	not thread safe				thread safe
+
+	High performance as threds		little low
+	are not required to wait to
+	 operate
+	on hashmap
+
+	while one thread iterating		allowed 
+	other thread do not allowed 
+	to update (CMEx)
+
+	Iterator of HashMap is fail-fast	fail safe
+	and it throws CMEx
+
+	null is allowed for both k, v		not allowed else we get NPEx
+
+	java 1.2				java 1.5
+
+
+
+	CopyOnWriteArrayList
+	----------------------
+	
+		<<Collection>>
+			|
+		    <<List>>
+			|
+		CopyOnWriteArrayList	juc
+
+	-> it is thread safe version of arrayList 
+	-> CopyOnWriteArrayList create a clonned copy of underlying arrayList for every update operation
+		at certain point, both will be synch automatically which is taken care by JVM internally
+
+	-> As update operation will be performed on cloned copy there is not effect for the thread which
+		performed read operations
+	-> it is costly to use becasue for every update opeation a cloned copy will be created
+		hence CopyOnWriteArrayList  is best choice if several read operation and less number of
+		write operation are required to performed
+
+	-> insertion order is presereved
+
+	-> Duplicate object are alloed
+
+	-> heterogenous object are allowed
+
+	-> null insertion is possible
+
+	-> it implements Serilizable, Clonable and RandomAccess interface
+
+	-> while one thread iterating CopyOnWriteArrayList, the other thread are 
+		allowed to modify and we will not get CMEx. ie iterator is Fail Safe
+
+	-> iterator of ArrayList can perform remove operation but iterator of CopyOnWriteArrayList 
+		can not perform remove operation. otherwise we will get Runtime exception 		UnsupportedOperationException
+
+	Constructors:
+	
+	CopyOnWriteArrayList l1=new CopyOnWriteArrayList();
+	
+	CopyOnWriteArrayList l2=new CopyOnWriteArrayList(Collection c);
+
+	CopyOnWriteArrayList l3=new CopyOnWriteArrayList(Object []a);
+
+
+	methods:
+	 boolean addIfAbsent(Object o)
+		the element will be added iff list do not contain that element
+
+	itn addAllAbsent(Collection c)
+		the elements of collection will be added to the list if the elements are absent
+		and return number of element added
+
+
+	-------------------------------------------------------------------------
+	ArrayList						CopyOnWriteArrayList
+	-------------------------------------------------------------------------
+	not thread safe						thread safe
+
+	while one thread iterating list object			allowed
+	other thread are not allowed to modify list
+	CMEx
+
+	iterator is fail fast					fail safe
+
+	iterator of arraylist can perform			UnsupportedOperationException
+	remove opeation
+
+	java 1.2						java 1.5
+	
+	
+
+	CopyOnWriteArraySet
+	----------------------
+	
+		<<Collection>>
+			|
+		    <<Set>>
+			|
+		CopyOnWriteArraySet	juc
+
+	-> it is thread safe version of Set
+
+	-> CopyOnWriteArraySet create a clonned copy of underlying arrayList for every update operation
+		at certain point, both will be synch automatically which is taken care by JVM internally
+
+	-> As update operation will be performed on cloned copy there is not effect for the thread which
+		performed read operations
+	-> it is costly to use becasue for every update opeation a cloned copy will be created
+		hence CopyOnWriteArrayList  is best choice if several read operation and less number of
+		write operation are required to performed
+
+	-> insertion order is presereved
+
+	-> Duplicate object are alloed
+
+	-> heterogenous object are allowed
+
+	-> null insertion is possible
+
+	-> it implements Serilizable, Clonable and RandomAccess interface
+
+	-> while one thread iterating CopyOnWriteArrayList, the other thread are 
+		allowed to modify and we will not get CMEx. ie iterator is Fail Safe
+
+	-> iterator of ArrayList can perform remove operation but iterator of CopyOnWriteArrayList 
+		can not perform remove operation. otherwise we will get Runtime exception 		UnsupportedOperationException
+
+	Constructors:
+	
+	CopyOnWriteArrayList l1=new CopyOnWriteArrayList();
+	
+	CopyOnWriteArrayList l2=new CopyOnWriteArrayList(Collection c);
+
+	CopyOnWriteArrayList l3=new CopyOnWriteArrayList(Object []a);
+
+
+	methods:
+	 boolean addIfAbsent(Object o)
+		the element will be added iff list do not contain that element
+
+	itn addAllAbsent(Collection c)
+		the elements of collection will be added to the list if the elements are absent
+		and return number of element added
+
+
+	-------------------------------------------------------------------------
+	ArrayList						CopyOnWriteArrayList
+	-------------------------------------------------------------------------
+	not thread safe						thread safe
+
+	while one thread iterating list object			allowed
+	other thread are not allowed to modify list
+	CMEx
+
+	iterator is fail fast					fail safe
+
+	iterator of arraylist can perform			UnsupportedOperationException
+	remove opeation
+
+	java 1.2						java 1.5
+	
+	
+	
+

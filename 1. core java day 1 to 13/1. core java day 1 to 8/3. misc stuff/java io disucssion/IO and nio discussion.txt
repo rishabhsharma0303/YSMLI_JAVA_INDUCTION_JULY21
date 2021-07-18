@@ -1,0 +1,90 @@
+
+
+Topics:
+
+
+
+	2. Using char streams
+
+	3. Using byte streams
+
+
+
+ Using char streams
+=====================
+
+	
+	Reading file using FileReader
+	--------------------------------
+
+		  try(
+				FileReader fr=new FileReader(new File("c:\\raj\\foo.txt"));
+				
+		   )
+		   {
+				int ch=0;
+				
+				while((ch=fr.read())!=-1){
+					System.out.print((char)ch);
+				}
+		   }
+			catch(IOException e){
+				System.out.println("error");
+		   }
+
+
+
+
+	
+	Reading/Writing file using BufferedXXX
+	-----------------------------------------
+
+				try   (
+				BufferedReader inputFile = new BufferedReader(new FileReader("c:\\raj\\foo.txt"));
+				BufferedWriter outputFile = new BufferedWriter(new FileWriter("c:\\raj\\foo2.txt"));
+				)
+				{
+					int ch=0;
+					while((ch=inputFile.read())!=-1){
+						outputFile.write((char)ch);
+					}
+				}
+			catch(IOException e){
+				System.out.println("error");
+			}
+
+
+
+
+ Using byte streams
+=====================
+
+	Ex: write constants 0 and 1 in different data type values
+		into a file and read the results back and print them
+
+
+
+
+
+
+	try (DataOutputStream dos =new DataOutputStream(new FileOutputStream("c:\\raj\\temp.txt")))
+		{
+			for(int i = 0; i < 10; i++) {
+				dos.writeByte(i);
+				dos.writeShort(i);
+				dos.writeInt(i);
+			}
+		}
+		catch(IOException e){
+			
+		}
+		
+		try (DataInputStream dis = new DataInputStream(new FileInputStream("c:\\raj\\temp.txt"))) 
+		{
+			for(int i = 0; i < 10; i++) {
+				System.out.printf("%d %d %d",dis.readByte(),dis.readShort(),dis.readInt());
+			}
+		}
+		catch(IOException e){
+			
+		}

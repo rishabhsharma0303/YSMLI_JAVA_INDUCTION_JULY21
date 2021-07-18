@@ -1,0 +1,31 @@
+Git hello world:
+----------------
+
+=> git & its benefits
+=> local git Repository
+=> global config
+=> Romotes git repository
+=> Remote git repo in github
+step 1:
+open project folder 
+git init
+
+gedit .gitignore
+
+git add .
+
+git status
+
+git config --global user.name "rgupta00"
+git config --global user.email "rgupta.mtech@gmail.com"
+
+
+git status
+
+git remote add origin ........
+git commit -m "initial commit"
+git push origin master
+
+provide username/password
+thats it
+

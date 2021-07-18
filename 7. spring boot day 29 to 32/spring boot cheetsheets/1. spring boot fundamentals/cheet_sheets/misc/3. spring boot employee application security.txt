@@ -1,0 +1,1548 @@
+
+Spring boot revision:
+_____________________
+=> spring boot rest
+=> spring boot rest ResponseEntity and status code
+=> Spring boot error handling
+=> JSR 303 validation
+=> hateoas
+=> Swagger Documentation
+=> Enable cacheing
+=> schedule processes
+=> Spring Boot Actuator
+=> Spring boot jsp
+=> spring boot thymeleaf
+=> Spring boot rest security
+=> spring boot jsp security
+
+________________
+spring boot rest
+_________________
+
+step 1: 
+_________
+choose dependencies: devTools, validdation, actutator, jpa, mysql, web, security
+
+step 2: paste in application.properties file
+________
+
+server.servlet.context-path=/empapp
+server.port=8080
+
+spring.datasource.url=jdbc:mysql://localhost:3306/kr_jdbc?useSSL=false
+spring.datasource.username=root
+spring.datasource.password=root
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+spring.jpa.hibernate.ddl-auto=create
+logging.level.org.springframework.web: DEBUG
+logging.level.org.hibernate: ERROR
+spring.jpa.show-sql=true
+spring.mvc.view.prefix:/WEB-INF/views/
+spring.mvc.view.suffix:.jsp
+
+
+
+We need to put dependency:
+
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-jasper</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+		</dependency>
+
+
+
+step 3: create domain
+___________
+@Entity
+@Table(name="emp_table")
+public class Employee {
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Integer id;
+	private String name;
+	private Double salary;
+}
+
+
+@Repository
+public interface EmpRepo extends CrudRepository<Employee, Integer>{
+
+}
+
+
+
+
+step 4: create service
+____________________
+
+public interface EmployeeService {
+	public List<Employee> getAll();
+	public Employee getEmployeeById(int id);
+	public Employee save(Employee emp);
+	public Employee delete(int empId);
+	public Employee update(int empId, Employee emp);
+}
+
+
+
+@Service
+@Transactional
+public class EmployeeServiceImpl implements EmployeeService {
+
+	@Autowired
+	private EmpRepo empRepo;
+	
+	@Override
+	public List<Employee> getAll() {
+		return (List<Employee>) empRepo.findAll();
+	}
+
+	@Override
+	public Employee getEmployeeById(int id) {
+		return empRepo.findById(id).orElseThrow(EmployeeNotFoundException:: new);
+	}
+
+	@Override
+	public Employee save(Employee emp) {
+		return empRepo.save(emp);
+	}
+
+	@Override
+	public Employee delete(int empId) {
+		Employee employeeToDelete=getEmployeeById(empId);
+		empRepo.delete(employeeToDelete);
+		return employeeToDelete;
+	}
+
+	@Override
+	public Employee update(int empId, Employee emp) {
+		Employee employeeToUpdate=getEmployeeById(empId);
+		employeeToUpdate.setName(emp.getName());
+		employeeToUpdate.setSalary(emp.getSalary());
+		return empRepo.save(employeeToUpdate);
+	}
+}
+
+
+
+public class EmployeeNotFoundException extends RuntimeException{
+}
+
+
+
+
+
+step 5: create rest controller
+____________________________-
+
+@RestController
+public class EmpRestController {
+	
+	@Autowired
+	private EmployeeService employeeService;
+	
+
+	@GetMapping(path="employee", produces=MediaType.APPLICATION_JSON_VALUE)
+	public List<Employee> allEmployees(){
+		return employeeService.getAll();
+	}
+	
+	
+	
+	@GetMapping(path="employee/{id}",produces=MediaType.APPLICATION_JSON_VALUE )
+	public Employee getEmployeeById(@PathVariable(name="id")int id){
+		return employeeService.getEmployeeById(id);
+	}
+	
+	@PostMapping(path="employee",produces=MediaType.APPLICATION_JSON_VALUE, 
+			consumes=MediaType.APPLICATION_JSON_VALUE )
+	public Employee addEmployee(@RequestBody Employee employee){
+		return employeeService.save(employee);
+	}
+	
+	@PutMapping(path="employee/{id}",produces=MediaType.APPLICATION_JSON_VALUE, 
+			consumes=MediaType.APPLICATION_JSON_VALUE )
+	public Employee updateEmployee(@PathVariable(name="id") int id,   @RequestBody Employee emp){
+		return  employeeService.update(id, emp);
+		
+	}
+	
+	
+	@DeleteMapping(path="employee/{id}",produces=MediaType.APPLICATION_JSON_VALUE)
+	public Employee deleteEmplloyee(@PathVariable(name="id") int id){
+		return employeeService.delete(id);
+	}
+}
+
+
+
+@SpringBootApplication
+public class DemoApplication implements CommandLineRunner{
+
+	@Autowired
+	private EmployeeService empService;
+	
+	public static void main(String[] args) {
+		SpringApplication.run(DemoApplication.class, args);
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+		System.out.println("rec are saved...");
+		empService.save(new Employee("raj", 63.0));
+		empService.save(new Employee("ekta", 69.5));
+		empService.save(new Employee("gunika", 40.3));
+		empService.save(new Employee("keshav", 50.2));		
+	}
+
+}
+
+
+
+______________________________________________
+spring boot rest ResponseEntity and status code
+______________________________________________
+
+ use ResponseEntity =wrap response object + httpstatus code + exceptional cases
+
+// @RestController=@Controller + @ResponseBody
+
+
+@RestController
+public class EmpRestController {
+	
+	@Autowired
+	private EmployeeService employeeService;
+	
+
+	@GetMapping(path="employee", produces=MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<Employee>> allEmployees(){
+		List<Employee>emps= employeeService.getAll();
+		return new ResponseEntity<List<Employee>>(emps, HttpStatus.OK);
+	}
+	
+	
+	
+	@GetMapping(path="employee/{id}",produces=MediaType.APPLICATION_JSON_VALUE )
+	public ResponseEntity<Employee> getEmployeeById(@PathVariable(name="id")int id){
+		Employee emp= employeeService.getEmployeeById(id);
+		return new ResponseEntity<Employee>(emp, HttpStatus.OK);
+	}
+	
+	@PostMapping(path="employee",produces=MediaType.APPLICATION_JSON_VALUE, 
+			consumes=MediaType.APPLICATION_JSON_VALUE )
+	public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee){
+		Employee emp= employeeService.save(employee);
+		return new ResponseEntity<Employee>(emp, HttpStatus.CREATED);
+	}
+	
+	@PutMapping(path="employee/{id}",produces=MediaType.APPLICATION_JSON_VALUE, 
+			consumes=MediaType.APPLICATION_JSON_VALUE )
+	public ResponseEntity<Employee> updateEmployee(@PathVariable(name="id") int id,   @RequestBody Employee emp){
+		Employee employee=  employeeService.update(id, emp);
+		return new ResponseEntity<Employee>(employee, HttpStatus.OK);
+		
+	}
+	
+	
+	@DeleteMapping(path="employee/{id}",produces=MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Void> deleteEmplloyee(@PathVariable(name="id") int id){
+		Employee emp= employeeService.delete(id);
+		return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+	}
+}
+
+
+__________________________
+Spring boot error handling
+___________________________
+
+
+
+@ControllerAdvice
+@RestController
+public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
+
+	@ExceptionHandler(Exception.class)
+	public final ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest request) {
+		ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(), request.getDescription(false));
+		return new ResponseEntity<Object>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@ExceptionHandler(EmployeeNotFoundException.class)
+	public ResponseEntity<Object> handleBookNotFoundEx(EmployeeNotFoundException ex, WebRequest req) {
+		ErrorDetails details = new ErrorDetails(new Date(), "employee not found", req.getDescription(false));
+		return new ResponseEntity<Object>(details, HttpStatus.NOT_FOUND);
+	}
+
+}
+
+
+public class ErrorDetails {
+	private Date timestamp;
+	private String message;
+	private String details;
+}
+
+
+@ResponseStatus(code=HttpStatus.NOT_FOUND)
+public class EmployeeNotFoundException extends RuntimeException{
+}
+
+
+
+____________________
+JSR 303 validation
+___________________
+
+
+step 1:apply jsr 303 annotations on pojo
+______
+@Size(min=4, message="name should have atleast 4 characters")
+
+step 2: apply @valid on post method
+________
+public ResponseEntity<Employee> addEmployee(@Valid @RequestBody Employee employee)
+
+step 3:
+________
+
+	@Override
+	protected ResponseEntity<Object> handleMethodArgumentNotValid (MethodArgumentNotValidException ex,
+	    HttpHeaders headers, HttpStatus status, WebRequest request) {
+		BindingResult bindingResult = ex.getBindingResult();
+		List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+		StringBuilder builder=new StringBuilder("validation failed for : ");
+		
+		for(FieldError fe:fieldErrors ) {
+			builder.append(fe.getField()).append(" ,");
+			
+		}
+		
+		ErrorDetails errorDetails = new ErrorDetails(new Date(),"validation failed", builder.toString());
+		return new ResponseEntity<Object>(errorDetails, HttpStatus.BAD_REQUEST);
+	} 
+
+
+
+
+____________
+hateoas
+____________
+
+step 1: put hateoas dependencies
+________
+
+step 2: enable static improt:
+________
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
+
+step 3: change POJO class:
+________
+
+public class Employee extends RepresentationModel<Employee> {
+}
+
+
+step 4: get an employee:
+_________________________
+
+	@GetMapping(path="employee/{id}",produces=MediaType.APPLICATION_JSON_VALUE )
+	public EntityModel<Employee> getEmployeeByIdHateoas(@PathVariable(name="id")int id){
+		Link link=linkTo(methodOn(EmpRestController.class).getEmployeeByIdHateoas(id)).withSelfRel();
+		Employee emp= employeeService.getEmployeeById(id);
+		emp.add(link);
+		return EntityModel.of(emp);
+	}
+
+
+step 5: get all employee:
+_________________________
+
+	// get all the emp
+
+	@GetMapping(path="employee", produces=MediaType.APPLICATION_JSON_VALUE)
+	public CollectionModel<Employee> allEmployees(){
+		List<Employee>emps= employeeService.getAll();
+		
+		for(Employee emp: emps) {
+			Link link=linkTo(methodOn(EmpRestController.class).getEmployeeByIdHateoas(emp.getId()))
+					.withSelfRel();
+			emp.add(link);
+		}
+		return CollectionModel.of(emps);
+		
+	}
+
+
+
+____________________
+Swagger Documentation
+______________________
+Documentation of spring boot rest endpoints
+
+<dependency>
+      <groupId>io.springfox</groupId>
+      <artifactId>springfox-swagger2</artifactId>
+      <version>2.4.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.springfox</groupId>
+      <artifactId>springfox-swagger-ui</artifactId>
+      <version>2.4.0</version>
+    </dependency>
+
+
+Swagger configuration:
+____________________
+
+@Configuration
+@EnableSwagger2
+public class SwaggerConfig {
+	public Docket api() {
+	    return new Docket(DocumentationType.SWAGGER_2);
+	}
+}
+
+http://localhost:8080/swagger-ui.html
+
+
+________________
+Enable cacheing
+_______________
+step 1: add @EnableCaching to spring boot strap class...
+step 2: put concurrentcachemanager to application ( latter will use production cache system)
+
+		@Transactional
+		@SpringBootApplication
+		@EnableCaching
+		public class Application {
+		
+			public static void main(String[] args) throws Exception{
+				SpringApplication.run(Application.class, args);
+			}
+			
+			@Bean
+			public CacheManager cacheManager(){
+				ConcurrentMapCacheManager cacheManager=new ConcurrentMapCacheManager("emps");
+				return cacheManager;
+		
+			}
+		}
+
+
+	step 3:apply @Cacheable annotation to service layer
+
+
+	@Cacheable
+	@Service
+	@Transactional
+	public class EmployeeServiceImpl implements EmployeeService {
+	
+		@Autowired
+		private EmpRepo empRepo;
+		
+		@Override
+		public List<Employee> getAll() {
+			return (List<Employee>) empRepo.findAll();
+		}
+	
+		@Cacheable(value="emps",key="#id" )
+		@Override
+		public Employee getEmployeeById(int id) {
+			return empRepo.findById(id).orElseThrow(EmployeeNotFoundException:: new);
+		}
+		@CachePut(value="emps", key="#result.id")
+		@Override
+		public Employee save(Employee emp) {
+			return empRepo.save(emp);
+		}
+		@CacheEvict(value="emps", key="#id")
+		@Override
+		public Employee delete(int empId) {
+			Employee employeeToDelete=getEmployeeById(empId);
+			empRepo.delete(employeeToDelete);
+			return employeeToDelete;
+		}
+		@CachePut(value="emps", key="#result.id")
+		@Override
+		public Employee update(int empId, Employee emp) {
+			Employee employeeToUpdate=getEmployeeById(empId);
+			employeeToUpdate.setName(emp.getName());
+			employeeToUpdate.setSalary(emp.getSalary());
+			return empRepo.save(employeeToUpdate);
+		}
+		
+		@CacheEvict(value="emps", allEntries=true)
+		@Override
+		public void evictCache() {}
+	}
+
+
+
+
+__________________
+schedule processes
+__________________
+
+
+step 1: put @EnableScheduling on bootstrap class
+
+step 2: create an component with @Scheduled annotation
+
+
+@Component
+public class ScheduledJob {
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Autowired
+	private EmployeeService service;
+
+	@Scheduled(cron = "0,30 * * * * *")
+	public void cronJob() {
+		logger.info("> cronJob");
+		List<Employee> emps = service.getAll();
+		logger.info("total emps", emps.size());
+		logger.info("< cronJob");
+	}
+
+	// after application startup delay of 5 sec, schedule to run each after 15 sec.
+	@Scheduled(initialDelay = 5000, fixedRate = 15000)
+	public void fixedRateJob() {
+		logger.info("> fixedRateJob");
+
+		// Add scheduled logic here
+
+		List<Employee> emps = service.getAll();
+		
+		logger.info("There are {} emps in the company.", emps.size());
+
+		logger.info("< fixedRateJob");
+	}
+
+}
+
+
+______________________
+Spring Boot Actuator
+_______________________
+
+Spring boot’s module Actuator allows you to monitor and manage 
+application usages in production environment, without coding and configuration for any of them.
+ These monitoring and management information is exposed via REST like endpoint URLs.
+
+
+
+https://howtodoinjava.com/spring-boot/actuator-endpoints-example/
+
+management.endpoints.web.exposure.include=*
+management.endpoint.health.show-details=always
+
+
+
+Creating custom endpoint
+________________________
+
+
+customize existing endpoint
+________________________
+
+@Component
+public class InternetHealthMetrics implements HealthIndicator {
+
+	@Override
+	public Health health() {
+		return checkInternet() == true ? Health.up().withDetail("success code", "Active Internet Connection").build()
+				: Health.down().withDetail("error code", "InActive Internet Connection").build();
+
+	}
+
+	private boolean checkInternet() {
+		boolean flag = false;
+		try {
+			URL url = new URL("https://www.google.com");
+			URLConnection connection = url.openConnection();
+			connection.connect();
+			flag = true;
+		} catch (Exception e) {
+			flag = false;
+		}
+		return flag;
+	}
+}
+
+@Component
+@Endpoint(id = "mytraining", enableByDefault = true)
+public class MyEndPoint {
+
+	@ReadOperation
+	public MyEndPointResponse features() {
+		return new MyEndPointResponse(263872, "Java training", "Active ");
+	}
+
+}
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+class MyEndPointResponse {
+	private int id;
+	private String name;
+	private String status;
+}
+
+
+
+
+		
+________________
+spring boot jsp
+________________
+
+
+@Controller
+public class TestController {
+
+	@RequestMapping("/welcome")
+	public ModelAndView firstPage() {
+		return new ModelAndView("welcome");
+	}
+
+}
+
+
+
+
+put jsp in /empapp/src/main/webapp/WEB-INF/views
+
+
+
+
+create EmployeeController to use jsp
+______________________________________
+
+
+@Controller
+public class EmpController {
+
+	@Autowired
+	private EmployeeService employeeService;
+
+	@RequestMapping(value = "viewAll", method = RequestMethod.GET)
+	public ModelAndView viewAll() {
+		ModelAndView m = new ModelAndView();
+		m.setViewName("viewAll");
+		m.addObject("emps", employeeService.getAll());
+		return m;
+	}
+
+	@RequestMapping(value = "addEmp", method = RequestMethod.GET)
+	public String showEmpForm(ModelMap map) {
+		Employee emp = new Employee();
+		map.addAttribute("emp", emp);
+		return "empform";
+	}
+
+	@RequestMapping(value = "addEmp", method = RequestMethod.POST)
+	public String submittedEmpForm(
+			@ModelAttribute(value = "emp") Employee employee) {
+		System.out.println("--------------------------");
+		System.out.println(employee);
+		Integer id = employee.getId();
+		if (id == null) {
+			employeeService.save(employee);
+		} else {
+			employeeService.update(id, employee);
+		}
+		return "redirect:viewAll";
+	}
+
+	@RequestMapping(value = "delEmp", method = RequestMethod.GET)
+	public String deleteBook(HttpServletRequest request) {
+
+		Integer id = Integer.parseInt(request.getParameter("id"));
+		employeeService.delete(id);
+		return "redirect:viewAll";
+	}
+
+	@RequestMapping(value = "updateEmp", method = RequestMethod.GET)
+	public String updateEmp(HttpServletRequest request, ModelMap model) {
+
+		Integer id = Integer.parseInt(request.getParameter("id"));
+		Employee empToUpdate = employeeService.getEmployeeById(id);
+
+		model.addAttribute("emp", empToUpdate);
+		return "empform";
+	}
+
+
+	@ExceptionHandler(EmployeeNotFoundException.class)
+	public ModelAndView handleEmployeeNotFoundException(HttpServletRequest request, Exception ex){
+		ModelAndView modelAndView = new ModelAndView();
+	    modelAndView.addObject("exception", ex);
+	    modelAndView.addObject("url", request.getRequestURL());
+	    
+	    modelAndView.setViewName("error");
+	    return modelAndView;
+	}	
+}
+
+
+
+
+create viewAll jsp
+__________________
+
+
+<body>
+	<table>
+		<thead>
+			<tr>
+				<th>emp id</th>
+				<th>emp name</th>
+				<th>emp salary</th>
+			</tr>
+		</thead>
+
+		<tbody>
+
+			<c:forEach var="e" items="${emps}">
+				<tr>
+					<td>${e.id}</td>
+					<td>${e.name}</td>
+					<td>${e.salary}</td>
+					<td><a href="updateEmp?id=<c:out value="${e.id }"/>">update</a>
+					<td><a href="delEmp?id=<c:out value="${e.id }"/>">delete</a>
+				</tr>
+			</c:forEach>
+
+		</tbody>
+	</table>
+	<a href="addEmp">Add new employee</a>
+</body>
+
+
+
+
+
+create empform jsp
+___________________
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>new emp reg form</title>
+</head>
+<body>
+
+<form:form action="addEmp" method="post" modelAttribute="emp">
+	<form:hidden path="id"/><br/>
+	Enter emp name:<form:input path="name"/><br/>
+	Enter emp salary:<form:input path="salary"/><br/>
+	<input type ="submit"/>
+</form:form>
+
+</body>
+</html>
+
+__________________________
+Spring boot rest security
+_________________________
+
+
+
+1. create some secrure url:
+__________________________
+
+@RestController
+public class SecureRestController {
+
+	@GetMapping(path="home")
+	public String home(){
+		return "hello to home";
+	}
+	
+	@GetMapping(path="admin")
+	public String homeAdmin(){
+		return "hello to admin";
+	}
+	
+	@GetMapping(path="mgr")
+	public String homeMgr(){
+		return "hello to mgr";
+	}
+	
+	@GetMapping(path="emp")
+	public String homeEmp(){
+		return "hello to emp";
+	}
+	
+}
+
+
+2. Create spring security configuration:
+_________________________________________
+
+@EnableWebSecurity
+public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.inMemoryAuthentication()
+		.withUser("raj").password("raj123").roles("ADMIN")
+		.and()
+		.withUser("ekta").password("ekta123").roles("MGR")
+		.and()
+		.withUser("gunika").password("gun123").roles("EMP");
+		
+	}
+	@Bean
+	public PasswordEncoder getPasswordEncoder() {
+		return NoOpPasswordEncoder.getInstance();
+	}
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http.csrf().disable()
+		.authorizeRequests()
+		.antMatchers("/admin/**").hasAnyRole("ADMIN")
+		.antMatchers("/mgr/**").hasAnyRole("ADMIN", "MGR")
+		.antMatchers("/emp/**").hasAnyRole("ADMIN","MGR","EMP")
+		.antMatchers("/home/**").permitAll()
+		.and().httpBasic()
+		.and()
+		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+	}
+
+}
+
+
+3. Configure AuthenticationEntryPoint
+__________________________________
+
+
+@Component
+public class MyAuthEntryPoint extends BasicAuthenticationEntryPoint{
+
+	@Override
+	public void afterPropertiesSet() {
+		setRealmName("training.com");
+		super.afterPropertiesSet();
+	}
+
+	@Override
+	public void commence(HttpServletRequest request, HttpServletResponse response,
+			AuthenticationException authException) throws IOException {
+		response.addHeader("WWW-Authenticate", "Basic realm=\"" + getRealmName() + "\"");
+		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		PrintWriter out=response.getWriter();
+		out.print("401-UNAUTHORIZED-contact rgupta.metch@gmil.com");
+	}
+	
+	
+}
+
+4. using BasicAuthenticationEntryPoint
+____________________________________
+@EnableWebSecurity
+public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	
+	@Autowired
+	private MyAuthEntryPoint authEntryPoint;
+	
+	//.........
+	@Bean
+	public PasswordEncoder getPasswordEncoder() {
+		return NoOpPasswordEncoder.getInstance();
+	}
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		//...........
+		.and().httpBasic().authenticationEntryPoint(authEntryPoint);
+		
+	}
+
+
+	
+}
+
+
+
+5. Configuring spring security with hibernate
+_______________________________________
+
+repository layer:
+________________
+@Data
+@Entity
+@Table(name="user_table")
+public class User {
+	
+	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Long id;
+	private String name;
+	private String password;
+	
+	private String role;// ADMIN, MGR, CLERK
+
+	public User() {}
+
+	public User(String name, String password, String role) {
+		this.name = name;
+		this.password = password;
+		this.role = role;
+	}
+	
+
+}
+
+
+
+@Repository
+public interface UserRepo extends CrudRepository<User, Long>{
+	public User findByName(String name);
+}
+
+
+
+
+
+create service layer:
+______________________
+
+public interface UserService {
+	public void addUser(User user);
+	public User findByName(String name);
+}
+
+
+@Service
+@Transactional
+public class UserServiceImpl implements UserService {
+
+	private UserRepo userRepo;
+
+	@Autowired
+	public UserServiceImpl(UserRepo userRepo) {
+		this.userRepo = userRepo;
+	}
+	
+	@Override
+	public void addUser(User user) {
+		userRepo.save(user);
+	}
+	@Override
+	public User findByName(String name) {
+		return userRepo.findByName(name);
+	}
+}
+
+
+
+Configure userdetails service:
+__________________________
+
+@Service
+public class DetailService implements UserDetailsService {
+
+	@Autowired
+	private UserService userService;
+	
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		User user=userService.findByName(username);
+		if(user==null)
+			throw new UsernameNotFoundException("username not found");
+		
+		return new org.springframework.security.core.userdetails.User(user.getName(), 
+				user.getPassword(), AuthorityUtils.createAuthorityList(new String[] {user.getRole()}));
+	}
+
+}
+
+
+Configure WebSecurityConfigurerAdapter:
+_________________________________________
+
+@EnableWebSecurity
+public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	@Autowired
+	private UserDetailsService detailService;
+	
+	@Autowired
+	private MyAuthEntryPoint authEntryPoint;
+	
+	/*@Bean
+	public BCryptPasswordEncoder getPasswordEncoder(){
+		return new BCryptPasswordEncoder();
+	}*/
+
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(detailService);
+		
+	}
+	@Bean
+	public PasswordEncoder getPasswordEncoder() {
+		return NoOpPasswordEncoder.getInstance();
+	}
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		//............
+	}
+
+}
+
+		
+Configuration security Hibernate config
+_______________________________________
+
+@SpringBootApplication
+public class DemoApplication implements CommandLineRunner{
+
+	@Autowired
+	private UserService userService;
+	
+	
+	public static void main(String[] args) {
+		SpringApplication.run(DemoApplication.class, args);
+	}
+
+
+	@Override
+	public void run(String... args) throws Exception {
+//		User user1=new User("raj", "raj123", "ROLE_ADMIN");
+//		
+//		User user2=new User("ekta", "ekta123", "ROLE_MGR");
+//		User user3=new User("gun", "gun123", "ROLE_EMP");
+//		
+//		userService.addUser(user1); 
+//		userService.addUser(user2); 
+//		userService.addUser(user3); 
+//		System.out.println("added--------------");
+	}
+
+}
+
+
+
+
+Configuration BCryptPasswordEncoder
+___________________________________
+
+@Entity
+@Table(name="user_table_new")
+public class User {
+	
+	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Long id;
+	private String name;
+	private String password;
+	private static transient BCryptPasswordEncoder encoder=new BCryptPasswordEncoder(12);
+	
+	private String role;// ADMIN, MGR, CLERK
+
+	public User() {}
+
+	public User(String name, String password, String role) {
+		this.name = name;
+		this.password = encoder.encode(password);
+		this.role = role;
+	}
+
+	
+	public void setPassword(String password) {
+		this.password = encoder.encode(password);
+	}
+
+	//other getter and setters
+}
+
+
+
+
+Spring method level security:
+_____________________________
+Spring sec:
+___________
+	url method 
+	method level
+	object level security
+
+
+
+There are four ways to implement method level security.
+________________________________________________________
+
+	=> Annotate method using @Secured
+
+	=> Annotate method using JSR-250 @RolesAllowed
+
+	=> Use Spring's Pre and Post invocation Annotations
+
+	=> Match method using Pointcuts
+
+
+Step 1:
+________
+enable method level security
+
+@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
+
+
+step 2:
+_______
+applying method level security in service layer
+
+
+public interface EmployeeService {
+	@PreAuthorize("hasAuthority('ROLE_USER') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MGR')")
+	public List<Employee> getAll();
+
+	@PostAuthorize ("returnObject.name == authentication.name")
+	//@PreAuthorize("hasAuthority('ROLE_USER') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MGR')")
+	public Employee getEmployeeById(int id);
+
+	@PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MGR')")
+	public Employee save(Employee emp);
+
+	@PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MGR')")
+	public Employee update(int empId, Employee emp);
+
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+	public Employee delete(int empId);
+}
+
+
+
+using @Secure annotation:
+_________________________
+public interface UserService {
+	
+	@Secured ({"ROLE_USER", "ROLE_ADMIN"})
+	public void addUser(String name, String pwd);
+	
+	@Secured("ROLE_ADMIN")
+	public void deleteUser(String name);
+	
+}
+
+concretepage.com/spring/spring-security/preauthorize-postauthorize-in-spring-security
+
+
+
+
+
+___________________________
+spring boot jsp security
+___________________________
+
+@EnableWebSecurity
+public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	@Autowired
+	private UserDetailsService detailService;
+
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(detailService);
+	}
+	@Bean
+	public BCryptPasswordEncoder getPasswordEncoder(){
+		return new BCryptPasswordEncoder();
+	}
+	
+//	@Bean
+//	public PasswordEncoder getPasswordEncoder() {
+//		return NoOpPasswordEncoder.getInstance();
+//	}
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http.csrf().disable()
+		.authorizeRequests()
+		.antMatchers("/admin/**").hasAnyRole("ADMIN")
+		.antMatchers("/mgr/**").hasAnyRole("ADMIN", "MGR")
+		.antMatchers("/emp/**").hasAnyRole("ADMIN","MGR","EMP")
+		.antMatchers("/home/**").permitAll()
+		.and().formLogin()
+		.loginPage("/login").loginProcessingUrl("/myloginprocessor").
+		usernameParameter("username").passwordParameter("password")
+		.defaultSuccessUrl("/home")
+		.permitAll()
+		.and()
+		.exceptionHandling().accessDeniedPage("/accessdenied");
+	}
+
+}
+
+
+
+@Controller
+public class HelloController {
+
+	@GetMapping(path="/")
+	public String home(){
+		return "home";
+	}
+	
+	@GetMapping(path="/login")
+	public String login(){
+		return "loginpage";
+	}
+	
+	@GetMapping(path="admin")
+	public String homeAdmin(){
+		return "admin";
+	}
+	
+	@GetMapping(path="mgr")
+	public String homeMgr(){
+		return "mgr";
+	}
+	
+	@GetMapping(path="emp")
+	public String homeEmp(){
+		return "emp";
+	}
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+___________________
+Spring boot jQuery:
+__________________
+
+JQuery data table:
+__________________
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.18/css/jquery.dataTables.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.js"></script>
+    <script type = "text/javascript">
+        $(document).ready(function () {
+            $.ajax({
+                url: "employee",
+                method: "GET",
+                dataType: "json",
+                success: function (data) {
+                    $("#datatable").dataTable({
+                        data: data,
+                        sort: true,
+                        searching: true,
+                        paging: true,
+                        columns: [
+                            {'data': 'id'},
+                            {'data': 'name'},
+                            {'data': 'salary'},
+                        ]
+                    })
+                }
+            })
+        })
+    </script>
+</head>
+<body>
+    <div style = "width: 700px; padding: 5px; border: 1px solid black;">
+        <table id = "datatable">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Salary</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</body>
+</html>
+
+
+
+show all employee:
+___________________
+
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Employee crud application</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type = "text/javascript">
+            $(document).ready(function () {
+                var employee = {};
+                getAllEmps();
+		//logic add employee
+                })
+            });
+            
+            function getAllEmps() {
+                $.ajax({
+                    url: 'employee',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        var tableBody = $('#tblEmployee tbody');
+                        tableBody.empty();
+                        $(data).each(function (index, element) {
+                            tableBody.append('<tr><td>'+element.name+'</td><td>'+element.salary+'</td>');
+                        })
+                    },
+                    error: function (error) {
+                        alert(error);
+                    }
+                });
+            }
+        </script>
+    </head>
+    <body>
+        <table border="1" style="border-collapse:collapse">
+            <tr>
+                <input id="txtId" type="text" hidden/>
+                
+                <td>Employee Name</td>
+                <td><input id="txtName" type="text" /></td>
+            </tr>
+            <tr>
+                <td>Employee Salary</td>
+                <td><input id="txtSalary" type="text" /></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="button" id="btnAddEmployee" value="Add Employee" />
+                </td>
+            </tr>
+        </table>
+        
+        <br>
+        
+        <table id="tblEmployee" border="1" style="border-collapse:collapse">
+            <thead>
+                <tr>
+                    <th>Employee Name</th>
+                    <th>Employee Salary</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </body>
+</html>
+
+
+
+
+
+Add employee employee:
+________________________
+
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Page Title</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script type = "text/javascript">
+            $(document).ready(function () {
+                var employee = {};
+                getAllEmps();
+                $('#btnAddEmployee').click(function () {
+                	 employee.name = $('#txtName').val();
+                     employee.salary = $('#txtSalary').val();
+                     var employeeJSON = JSON.stringify(employee);
+                    $.ajax({
+                        url: 'employee',
+                        method: 'POST',
+                        data: employeeJSON,
+                        contentType: "application/json; charset=utf-8",
+                        success: function () {
+                            alert('Saved successfully!');
+                            getAllEmps();
+                        },
+                        error: function (error) {
+                        	console.log('error posting')
+                            alert(error);
+                        }
+                    })
+                    
+                })
+            });
+            
+            function getAllEmps() {
+                $.ajax({
+                    url: 'employee',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        var tableBody = $('#tblEmployee tbody');
+                        tableBody.empty();
+                        $(data).each(function (index, element) {
+                            tableBody.append('<tr><td>'+element.name+'</td><td>'+element.salary+'</td>');
+                        })
+                    },
+                    error: function (error) {
+                        alert(error);
+                    }
+                });
+            }
+        </script>
+    </head>
+    <body>
+        <table border="1" style="border-collapse:collapse">
+            <tr>
+                <input id="txtId" type="text" hidden/>
+                <td>Employee Name</td>
+                <td><input id="txtName" type="text" /></td>
+            </tr>
+            <tr>
+                <td>Employee Salary</td>
+                <td><input id="txtSalary" type="text" /></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <input type="button" id="btnAddEmployee" value="Add Employee" />
+                </td>
+            </tr>
+        </table>
+
+        <table id="tblEmployee" border="1" style="border-collapse:collapse">
+            <thead>
+                <tr>
+                    <th>Employee Name</th>
+                    <th>Employee Salary</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </body>
+</html>
+
+
+
+
+
+
+
+delete an employee:
+___________________
+
+tableBody.append('<tr><td>'+element.name+'</td><td>'+element.salary+'</td><td><button onclick = "deleteEmp('+element.id+')">Delete</button></td></tr>');
+
+
+
+  function deleteEmp(id){
+                $.ajax({
+                    url: 'employee/'+id,
+                    method: 'DELETE',
+                    success: function () {
+                        alert('record has been deleted');
+                        getAllEmps();
+                    },
+                    error: function (error) {
+                        alert(error);
+                    }
+                })
+            }
+
+_______________________
+spring boot thymeleaf
+_______________________
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<form action="#" th:action="@{/addEmp}" th:object="${emp}"
+		method="POST">
+
+		<!-- Add hidden form field to handle update -->
+		<input type="hidden" th:field="*{id}" />
+		 <input type="text" th:field="*{name}" > 
+		 <input type="text" th:field="*{salary}">
+
+		<button type="submit">add Employee</button>
+	</form>
+
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>employee app</title>
+</head>
+
+<body>
+	<table border="1">
+		<thead>
+			<tr>
+				<th>emp id</th>
+				<th>emp name</th>
+				<th>emp salary</th>
+				<th>update</th>
+				<th>delete</th>
+			</tr>
+		</thead>
+
+		<tbody>
+			<tr th:each="e : ${emps}">
+				<td th:text="${e.id}"></td>
+				<td th:text="${e.name}"></td>
+				<td th:text="${e.salary}"></td>
+				<td><a th:href="@{/update_emp/{id}(id=${e.id})}">Update</a> </td>
+				<td><a th:href="@{/del_emp/{id}(id=${e.id})}">Delete</a></td>
+			</tr>
+		</tbody>
+	</table>
+	<a href="addEmp">Add new employee</a>
+</body>
+
+</html>
+
+
+
+

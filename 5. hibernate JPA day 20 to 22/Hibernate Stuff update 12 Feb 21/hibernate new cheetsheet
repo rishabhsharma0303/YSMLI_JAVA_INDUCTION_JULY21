@@ -1,0 +1,46 @@
+
+
+@Formula 
+__________
+
+annotation to provide a SQL snippet. Hibernate
+executes it when it fetches the entity from the database. The return value of the
+SQL expression gets mapped to a read-only entity attribute
+
+
+@Entity
+public class Author {
+@Id
+@GeneratedValue(strategy = GenerationType.AUTO)
+@Column(name = "id", updatable = false, nullable = false)
+private Long id;
+@Column
+private LocalDate dateOfBirth;
+@Formula(value = "date_part('year', age(dateOfBirth))")
+private int age;
+
+
+
+ @PrePersist 
+___________
+
+The JPA specification defines a set of callback annotations to trigger method
+calls for certain lifecycle events. If you want to initialize an entity attribute
+
+before it gets persisted, you just have to do 2 things:
+1. Add a method to the entity that initializes the attribute.
+2. Annotate this method with @PrePersist so that Hibernate calls it before
+it persists the entity.
+
+
+@Entity
+public class Author {
+...
+@PrePersist
+private void initializeCreatedAt() {
+this.createdAt = LocalDateTime.now();
+log.info("Set createdAt to "+this.createdAt);
+}
+}
+
+

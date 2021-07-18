@@ -1,0 +1,218 @@
+Java NIO
+--------------
+
+
+IO vs NIO  ?
+-----------
+
+	IO 			NIO
+	-----------------------------------------
+	Stream oriented 	Buffer oriented
+
+	Blocking IO 		Non blocking IO
+  				Selectors
+
+
+
+
+	Stream vs Buffer oriented?
+	-----------------------------
+
+		IO and NIO is differn in how data is packaged and transmitted.
+
+
+
+		Stream Oriented Streams
+		-------------------------
+
+			==> Input Stream produce one byte of data at a time
+
+			==> Output Stream consume one byte of data at a time 
+
+
+		Important observation about Stream oriented approach:
+		-----------------------------------------------------
+
+			==> When you read the data using Streams it is not 
+			    cached anywhere...
+
+			==> You cannot move forth and back in the data in a stream 
+
+				If you need to move forth and back in the data read from a stream, 
+				you will need to cache it in a buffer first.
+
+
+
+
+
+
+
+
+	
+		Buffer Oriented Streams
+		-----------------------
+
+			Java NIO's buffer oriented approach
+			
+
+
+	
+			==> Data is read into a buffer from which it is later processed
+
+			==> You can move forth and back in the buffer as you need to
+
+			==> bit more flexibility during processing
+
+		
+		However, you also need to check if the buffer contains all the data 
+		you need in order to fully process it
+
+
+		And, you need to make sure that when reading more data into the buffer, 
+		you do not overwrite data in the buffer you have not yet processed. 
+
+
+
+
+
+
+Channels and Buffers
+====================
+
+		==> Channels and Buffers are the central objects in NIO
+
+
+
+	What is Channels?
+
+		=> Channels are analogous to streams
+
+		=> All data must pass through Channels
+
+		=> Channels are bi-directional while Stream is uni-directional
+
+		=> An Stream must be subclass of InputStream or OutputStream while a Channel can be opened for reading, 			for writing, or for both
+
+
+	What is Buffer?
+
+		=> A Buffer is like a container object
+
+		=> all data is handled through Buffer objects
+
+		=> All data that is send on channels is first placed in Buffer
+
+
+
+
+
+Reading and writing in NIO
+---------------------------
+
+
+	hello World program
+	#######################
+
+	Steps:
+	
+		(1) getting the Channel from FileInputStream
+
+		(2) creating the Buffer
+
+		(3) reading from the Channel into the Buffer
+
+
+
+	
+	Our first step is to get a channel.
+	----------------------------------
+
+	FileInputStream fin = new FileInputStream( "readandshow.txt" );
+
+	FileChannel fc = fin.getChannel();
+
+
+	The next step is to create a buffer:
+	-------------------------------------------
+
+	ByteBuffer buffer = ByteBuffer.allocate( 1024 );
+
+
+	finally, we need to read from the channel into the buffer:
+	----------------------------------------------------
+	fc.read( buffer );
+
+
+
+
+
+	Example: reading and echo from an file
+	-----------------------------------
+
+
+		     FileInputStream fin = new FileInputStream( "c:\\raj\\rajexwapperdisucsion.txt" );
+
+		    FileChannel fc = fin.getChannel();
+
+		    ByteBuffer buffer = ByteBuffer.allocate( 1024 );
+
+		    fc.read( buffer );
+
+		    buffer.flip();
+
+		    int i=0;
+		    while (buffer.remaining()>0) {
+		      byte b = buffer.get();
+		      System.out.println( "Character "+i+": "+((char)b) );
+		      i++;
+		    }
+
+		    fin.close();
+		
+
+
+
+
+	Example: copy file to another file
+	-----------------------------------
+
+
+    	FileInputStream fin = new FileInputStream( infile );
+
+    	FileOutputStream fout = new FileOutputStream( outfile );
+
+    	FileChannel fcin = fin.getChannel();
+    	FileChannel fcout = fout.getChannel();
+
+   	 ByteBuffer buffer = ByteBuffer.allocateDirect( 1024 );
+
+   	 while (true) {
+     		 buffer.clear(); //clear() method resets the buffer
+
+     		 int r = fcin.read( buffer );
+
+     		 if (r==-1) { //read() method returns -1, if no more data
+       			 break;
+     		 }
+
+     		 buffer.flip(); //flip() method prepares the buffer to have the newly-read data written to another channel
+
+      		fcout.write( buffer );
+    	}
+
+
+
+
+
+
+	Blocking vs. Non-blocking IO
+	--------------------------------
+
+
+	Java IO's various streams are blocking. 
+	That means, that when a thread invokes a read() or write(), 
+	that thread is blocked until there is some data to read, or the data is fully written. 
+
+	The thread can do nothing else in the meantime
+
+	

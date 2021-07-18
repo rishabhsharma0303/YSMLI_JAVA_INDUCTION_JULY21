@@ -1,0 +1,46 @@
+Socket programming java
+======================
+public class Server {
+
+	public static void main(String[] args) {
+		try {
+			ServerSocket serverSock = new ServerSocket(4242);
+			while (true) {
+				Socket sock = serverSock.accept();
+				PrintWriter writer = new PrintWriter(sock.getOutputStream());
+				String advice = "i love java";
+				writer.println(advice);
+				writer.close();
+				System.out.println(advice);
+			}
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+	}
+}
+
+
+public class Client
+{
+  public static void main(String[] args)
+    {
+	   try {
+           Socket s = new Socket("127.0.0.1", 4242);
+           InputStreamReader streamReader = new InputStreamReader(s.getInputStream()); 
+           BufferedReader reader = new BufferedReader(streamReader);
+           
+           String advice = reader.readLine();
+           System.out.println(advice);
+           reader.close();
+       }
+       catch (IOException ex)
+       {
+           ex.printStackTrace();
+       }
+    }
+}
+
+
+
+
+

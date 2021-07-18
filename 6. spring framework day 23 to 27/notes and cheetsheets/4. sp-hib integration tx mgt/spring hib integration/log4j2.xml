@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <!-- Console Appender -->
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{yyyy-MMM-dd HH:mm:ss a} [%t] %-5level %logger{36} - %msg%n" />
+    </Console> 
+    
+     <!-- Rolling File Appender -->
+    <RollingFile name="RollingFile">
+      <FileName>demo/mylog.log</FileName>
+      <FilePattern>/demo/%d{yyyy-MM-dd-hh-mm}.log.zip</FilePattern>
+      <PatternLayout>
+        <Pattern>%d{yyyy-MMM-dd HH:mm:ss a} [%t] %-5level %logger{36} - %msg%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="2" modulate="true" />
+      </Policies>
+      <DefaultRolloverStrategy max="5" />
+    </RollingFile>
+    
+  </Appenders>
+  <Loggers>
+    <!-- Log everything in hibernate -->
+    <Logger name="org.hibernate" level="info" additivity="false">
+      <AppenderRef ref="Console" />
+    </Logger>
+ 
+    <!-- Log all SQL statements -->
+    <Logger name="org.hibernate.SQL" level="debug" additivity="false">
+      <AppenderRef ref="Console" />     
+    </Logger>
+ 
+    <Root level="INFO">
+       <AppenderRef ref="RollingFile" />
+      <AppenderRef ref="Console" />     
+    </Root>
+  </Loggers>
+</Configuration>

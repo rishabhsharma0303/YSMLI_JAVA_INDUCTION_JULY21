@@ -1,0 +1,27 @@
+ day 1:
+_________
+ Advantage of spring boot , configuration spring boot
+ Spring boot hello world, REST service
+ Spring jpa, spring data
+ Spring jdbc, spring transaction mgt
+ Book store curd REST service
+ Understand Spring boot auto config
+ Using ResponseEntity & http status code
+ Exception handing spring boot
+ JSR 303 validation
+ hateoas
+ Swagger Documentation
+ Monitoring APIs with Spring Boot Actuator
+ Versioning RESTful Services 
+ Enable cacheing
+ schedule processes
+ Spring boot jsp crud 
+ Excercise
+
+
+day 2:
+________
+spring data
+jpa join examples
+blogpost applicatation
+spring boot security

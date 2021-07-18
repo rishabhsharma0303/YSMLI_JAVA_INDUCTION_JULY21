@@ -1,0 +1,59 @@
+Feign client:
+______________
+
+Feign is a declarative web service client.
+ It makes writing web service clients easier.
+
+ To use Feign create an interface and annotate it.
+ It has pluggable annotation support including Feign annotations and JAX-RS annotations. Feign also supports pluggable encoders and decoders.
+ Spring Cloud adds support for Spring MVC annotations and for using the same HttpMessageConverters used by default in Spring Web. Spring Cloud integrates Ribbon and Eureka to provide a load balanced HTTP client when using Feign.
+
+ Feign is a declarative framework developed by Netflix for implementing REST API clients.
+
+Steps to integrate Open Feign with Spring Boot - 
+_______________________________________
+
+1 - Needs to add feign dependency in pom.xml
+spring-cloud-starter-openfeign
+
+2 - Enable open feign from application class
+@EnableFeignClients
+
+3 - Create interface and annotate with FeignClient
+
+
+
+@FeignClient(value = "book-rest-api", url = "")
+public interface BookFeignClient {
+ @GetMapping
+ ResponseEntity bookList();
+
+ @GetMapping("/{id}")
+ ResponseEntity bookOne(@PathVariable("id") Long id);
+
+ @PostMapping
+ ResponseEntity bookAdd(@RequestBody Book book);
+
+ @PutMapping
+ ResponseEntity bookUpdate(@RequestBody Book book);
+
+ @DeleteMapping("/{id}")
+ ResponseEntity bookDelete(@PathVariable("id") Long id);
+}
+
+
+
+4 - Call these interface method from your controller like below
+
+
+
+
+@Autowired
+private BookFeignClient bookFeignClient;
+
+bookFeignClient.bookList().getBody()
+bookFeignClient.bookOne(id).getBody()
+bookFeignClient.bookAdd(book)
+bookFeignClient.bookUpdate(book)
+bookFeignClient.bookDelete(id).getBody()
+

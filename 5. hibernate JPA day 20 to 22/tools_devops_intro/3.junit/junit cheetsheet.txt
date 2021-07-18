@@ -1,0 +1,264 @@
+
+==============
+juint basics
+==============
+
+
+	Hello World calculator maven project
+	--------------------------
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+
+
+
+	junit annotations:
+	==========
+	@BeforeClass:
+		Run only 1 time before all the test cases of class. 
+		Can be used to initialize resources.
+
+	@AfterClass :
+		Run only 1 time after all the test cases of class. 
+		Can be used to clean up the resources.
+
+	@Before :
+		Run annotated method every time individual test case is 
+		executed but run before the test case.
+
+	@After :
+		Run annotated method every time individual test case is 
+		executed but run after the test case
+
+
+       Assertion methods
+	-----------------
+      assertEquals():-
+      fail() :- fail a test with no reason
+      assertNull() :- Asserts that object is null.
+      assertNotNull() :- Asserts that object is not null.
+      assertTrue() :- Asserts that condition is true.
+      assertFalse() : Asserts that condition is false.
+
+
+	Exception Checking Using Junit
+	------------------------------
+
+
+	Ignore Test Cases
+	---------------
+	Sometimes we want to run only few test cases then we can ignore 
+	few test cases with @Ignore annotation. 
+
+	How to test with multiple parameters
+
+
+
+	more on junit
+	------------
+	Ignore
+	exception
+	timeout
+
+
+	Test suite
+	-------------
+	@RunWith(Suite.class)
+	@SuiteClasses({A.class, B.class}
+	public class TestAll{
+
+	}
+
+
+
+parameterized unit test cases*
+------------------------------
+Need of parameterized unit test case?
+
+Step 1: create an test class (CalculatorTest)
+
+ with annotation @RunWith
+@RunWith(Parameterized.class)
+
+
+
+step 2: create an static method with @Parameters
+
+
+	@Parameters
+	public static Collection<Object[]> testData(){
+		Object[][]data=new Object[][]{{4,2,2},{4,1,3}};
+		return Arrays.asList(data);
+	}
+
+
+
+step 3: put as instance variable
+
+	private int expectedResult;
+	private int firstNumber;
+	private int secondNumber;
+
+
+
+
+	
+	Calculator calculator;
+	
+	@Before
+	public void setUp() throws Exception {
+		calculator=new Calculator();
+	}
+	
+	public CalculatorTest(int expectedResult, int firstNumber, int secondNumber) {
+		super();
+		this.expectedResult = expectedResult;
+		this.firstNumber = firstNumber;
+		this.secondNumber = secondNumber;
+	}
+	
+	
+
+	@Test
+	public void testAdd(){
+		Assert.assertEquals(expectedResult, calculator.add(firstNumber, secondNumber));
+	}
+	@After
+	public void tearDown() throws Exception {
+		calculator=null;
+	}
+
+
+
+crud application
+================
+
+
+import java.util.Date;
+public class Event
+{
+    private int id;
+    private String title;
+	//getter setter
+}
+
+
+
+
+public interface EventDAO
+{
+    int saveEvent( Event event );
+    Event getEvent( int id );
+    void deleteEvent( int id );
+}
+
+
+
+public class MemoryEventDAO implements EventDAO
+{
+    private Map<Integer, Event> events;
+    
+    private int identifier;
+    
+    public MemoryEventDAO()
+    {
+        events = new HashMap<Integer, Event>();
+    }
+    
+    public int saveEvent( Event event )
+    {
+        event.setId( ++identifier );
+   
+        events.put( identifier, event );
+        
+        return identifier;
+    }
+    
+    public Event getEvent( int id )
+    {
+        return events.get( id );
+    }
+    
+    public void deleteEvent( int id )
+    {
+        events.remove( id );
+    }
+}
+
+
+jUnit 4.x
+----------------
+
+
+public class EventDAOAnnotatedTest
+{
+    private EventDAO eventDAO;
+    
+    private Event event;
+    
+    @Before
+    public void invokedBeforeTests() // Sets up the test fixture
+    {
+        eventDAO = new MemoryEventDAO(); // Instantiating a new EventDAO for each test
+        
+        
+        event = new Event( "U2 concert"); // Creating a convenient Event instance
+    }
+    
+    @Test
+    public void addEvent()
+    {
+        int id = eventDAO.saveEvent( event );
+        
+        event = eventDAO.getEvent( id );
+        
+        assertEquals( id, event.getId() ); // Verify equality between the added and the retrieved object
+        assertEquals( "U2 concert", event.getTitle() );        
+       
+    }
+
+    @Test
+    public void getEvent()
+    {
+        int id = eventDAO.saveEvent( event );
+
+        event = eventDAO.getEvent( id );
+        
+        assertNotNull( event );
+        
+        assertEquals( id, event.getId() );        
+        assertEquals( "U2 concert", event.getTitle() );        
+        
+        event = eventDAO.getEvent( -1 );
+        
+        assertNull( event ); // Verify that null is returned when object does not exist               
+    }
+
+    @Test
+    public void deleteEvent()
+    {
+        int id = eventDAO.saveEvent( event );
+        
+        event = eventDAO.getEvent( id );
+        
+        assertNotNull( event ); // Verify that event exists
+        
+        eventDAO.deleteEvent( id );
+        
+        event = eventDAO.getEvent( id );
+        
+        assertNull( event ); // Verify that event has been deleted
+    }
+    
+    @After
+    public void invokedAfterTests()
+    {
+        // Do some useful tear-down work
+    }
+}
+
+

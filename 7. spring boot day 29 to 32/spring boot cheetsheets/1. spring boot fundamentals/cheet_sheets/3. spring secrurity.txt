@@ -1,0 +1,491 @@
+
+__________________________
+Spring boot rest security
+_________________________
+
+
+security basics
+_________________
+
+Spring security configuration with spring boot:
+______________________________________________
+
+why not tomcat/weblogic security?
+
+Spring provide: url , method and object level security
+
+
+
+Configuration hello world:
+_________________________
+spring.security.user.name=raj
+spring.security.user.password=raj
+
+
+
+1. create some secrure url:
+__________________________
+
+@RestController
+public class SecureRestController {
+
+	@GetMapping(path="home")
+	public String home(){
+		return "hello to home";
+	}
+	
+	@GetMapping(path="admin")
+	public String homeAdmin(){
+		return "hello to admin";
+	}
+	
+	@GetMapping(path="mgr")
+	public String homeMgr(){
+		return "hello to mgr";
+	}
+	
+	@GetMapping(path="emp")
+	public String homeEmp(){
+		return "hello to emp";
+	}
+	
+}
+
+
+2. Create spring security configuration:
+_________________________________________
+
+@EnableWebSecurity
+public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.inMemoryAuthentication()
+		.withUser("raj").password("raj123").roles("ADMIN")
+		.and()
+		.withUser("ekta").password("ekta123").roles("MGR")
+		.and()
+		.withUser("gunika").password("gun123").roles("EMP");
+		
+	}
+	@Bean
+	public PasswordEncoder getPasswordEncoder() {
+		return NoOpPasswordEncoder.getInstance();
+	}
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http.csrf().disable()
+		.authorizeRequests()
+		.antMatchers("/admin/**").hasAnyRole("ADMIN")
+		.antMatchers("/mgr/**").hasAnyRole("ADMIN", "MGR")
+		.antMatchers("/emp/**").hasAnyRole("ADMIN","MGR","EMP")
+		.antMatchers("/home/**").permitAll()
+		.and().httpBasic()
+		.and()
+		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+	}
+
+}
+
+
+3. Configure AuthenticationEntryPoint
+__________________________________
+
+
+@Component
+public class MyAuthEntryPoint extends BasicAuthenticationEntryPoint{
+
+	@Override
+	public void afterPropertiesSet() {
+		setRealmName("training.com");
+		super.afterPropertiesSet();
+	}
+
+	@Override
+	public void commence(HttpServletRequest request, HttpServletResponse response,
+			AuthenticationException authException) throws IOException {
+		response.addHeader("WWW-Authenticate", "Basic realm=\"" + getRealmName() + "\"");
+		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+		PrintWriter out=response.getWriter();
+		out.print("401-UNAUTHORIZED-contact rgupta.metch@gmil.com");
+	}
+	
+	
+}
+
+4. using BasicAuthenticationEntryPoint
+____________________________________
+@EnableWebSecurity
+public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	
+	@Autowired
+	private MyAuthEntryPoint authEntryPoint;
+	
+	//.........
+	@Bean
+	public PasswordEncoder getPasswordEncoder() {
+		return NoOpPasswordEncoder.getInstance();
+	}
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		//...........
+		.and().httpBasic().authenticationEntryPoint(authEntryPoint);
+		
+	}
+
+
+	
+}
+
+
+
+5. Configuring spring security with hibernate
+_______________________________________
+
+repository layer:
+________________
+@Data
+@Entity
+@Table(name="user_table")
+public class User {
+	
+	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Long id;
+	private String name;
+	private String password;
+	
+	private String role;// ADMIN, MGR, CLERK
+
+	public User() {}
+
+	public User(String name, String password, String role) {
+		this.name = name;
+		this.password = password;
+		this.role = role;
+	}
+	
+
+}
+
+
+
+@Repository
+public interface UserRepo extends CrudRepository<User, Long>{
+	public User findByName(String name);
+}
+
+
+
+
+
+create service layer:
+______________________
+
+public interface UserService {
+	public void addUser(User user);
+	public User findByName(String name);
+}
+
+
+@Service
+@Transactional
+public class UserServiceImpl implements UserService {
+
+	private UserRepo userRepo;
+
+	@Autowired
+	public UserServiceImpl(UserRepo userRepo) {
+		this.userRepo = userRepo;
+	}
+	
+	@Override
+	public void addUser(User user) {
+		userRepo.save(user);
+	}
+	@Override
+	public User findByName(String name) {
+		return userRepo.findByName(name);
+	}
+}
+
+
+
+Configure userdetails service:
+__________________________
+
+@Service
+public class DetailService implements UserDetailsService {
+
+	@Autowired
+	private UserService userService;
+	
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		User user=userService.findByName(username);
+		if(user==null)
+			throw new UsernameNotFoundException("username not found");
+		
+		return new org.springframework.security.core.userdetails.User(user.getName(), 
+				user.getPassword(), AuthorityUtils.createAuthorityList(new String[] {user.getRole()}));
+	}
+
+}
+
+
+Configure WebSecurityConfigurerAdapter:
+_________________________________________
+
+@EnableWebSecurity
+public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	@Autowired
+	private UserDetailsService detailService;
+	
+	@Autowired
+	private MyAuthEntryPoint authEntryPoint;
+	
+	/*@Bean
+	public BCryptPasswordEncoder getPasswordEncoder(){
+		return new BCryptPasswordEncoder();
+	}*/
+
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(detailService);
+		
+	}
+	@Bean
+	public PasswordEncoder getPasswordEncoder() {
+		return NoOpPasswordEncoder.getInstance();
+	}
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		//............
+	}
+
+}
+
+		
+Configuration security Hibernate config
+_______________________________________
+
+@SpringBootApplication
+public class DemoApplication implements CommandLineRunner{
+
+	@Autowired
+	private UserService userService;
+	
+	
+	public static void main(String[] args) {
+		SpringApplication.run(DemoApplication.class, args);
+	}
+
+
+	@Override
+	public void run(String... args) throws Exception {
+//		User user1=new User("raj", "raj123", "ROLE_ADMIN");
+//		
+//		User user2=new User("ekta", "ekta123", "ROLE_MGR");
+//		User user3=new User("gun", "gun123", "ROLE_EMP");
+//		
+//		userService.addUser(user1); 
+//		userService.addUser(user2); 
+//		userService.addUser(user3); 
+//		System.out.println("added--------------");
+	}
+
+}
+
+
+
+
+Configuration BCryptPasswordEncoder
+___________________________________
+
+@Entity
+@Table(name="user_table_new")
+public class User {
+	
+	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Long id;
+	private String name;
+	private String password;
+	private static transient BCryptPasswordEncoder encoder=new BCryptPasswordEncoder(12);
+	
+	private String role;// ADMIN, MGR, CLERK
+
+	public User() {}
+
+	public User(String name, String password, String role) {
+		this.name = name;
+		this.password = encoder.encode(password);
+		this.role = role;
+	}
+
+	
+	public void setPassword(String password) {
+		this.password = encoder.encode(password);
+	}
+
+	//other getter and setters
+}
+
+
+
+
+Spring method level security:
+_____________________________
+Spring sec:
+___________
+	url method 
+	method level
+	object level security
+
+
+
+There are four ways to implement method level security.
+________________________________________________________
+
+	=> Annotate method using @Secured
+
+	=> Annotate method using JSR-250 @RolesAllowed
+
+	=> Use Spring's Pre and Post invocation Annotations
+
+	=> Match method using Pointcuts
+
+
+Step 1:
+________
+enable method level security
+
+@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
+
+
+step 2:
+_______
+applying method level security in service layer
+
+
+public interface EmployeeService {
+	@PreAuthorize("hasAuthority('ROLE_USER') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MGR')")
+	public List<Employee> getAll();
+
+	@PostAuthorize ("returnObject.name == authentication.name")
+	//@PreAuthorize("hasAuthority('ROLE_USER') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MGR')")
+	public Employee getEmployeeById(int id);
+
+	@PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MGR')")
+	public Employee save(Employee emp);
+
+	@PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MGR')")
+	public Employee update(int empId, Employee emp);
+
+	@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+	public Employee delete(int empId);
+}
+
+
+
+using @Secure annotation:
+_________________________
+public interface UserService {
+	
+	@Secured ({"ROLE_USER", "ROLE_ADMIN"})
+	public void addUser(String name, String pwd);
+	
+	@Secured("ROLE_ADMIN")
+	public void deleteUser(String name);
+	
+}
+
+concretepage.com/spring/spring-security/preauthorize-postauthorize-in-spring-security
+
+
+
+
+
+___________________________
+spring boot jsp security
+___________________________
+
+@EnableWebSecurity
+public class AppSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	@Autowired
+	private UserDetailsService detailService;
+
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(detailService);
+	}
+	@Bean
+	public BCryptPasswordEncoder getPasswordEncoder(){
+		return new BCryptPasswordEncoder();
+	}
+	
+//	@Bean
+//	public PasswordEncoder getPasswordEncoder() {
+//		return NoOpPasswordEncoder.getInstance();
+//	}
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http.csrf().disable()
+		.authorizeRequests()
+		.antMatchers("/admin/**").hasAnyRole("ADMIN")
+		.antMatchers("/mgr/**").hasAnyRole("ADMIN", "MGR")
+		.antMatchers("/emp/**").hasAnyRole("ADMIN","MGR","EMP")
+		.antMatchers("/home/**").permitAll()
+		.and().formLogin()
+		.loginPage("/login").loginProcessingUrl("/myloginprocessor").
+		usernameParameter("username").passwordParameter("password")
+		.defaultSuccessUrl("/home")
+		.permitAll()
+		.and()
+		.exceptionHandling().accessDeniedPage("/accessdenied");
+	}
+
+}
+
+
+
+@Controller
+public class HelloController {
+
+	@GetMapping(path="/")
+	public String home(){
+		return "home";
+	}
+	
+	@GetMapping(path="/login")
+	public String login(){
+		return "loginpage";
+	}
+	
+	@GetMapping(path="admin")
+	public String homeAdmin(){
+		return "admin";
+	}
+	
+	@GetMapping(path="mgr")
+	public String homeMgr(){
+		return "mgr";
+	}
+	
+	@GetMapping(path="emp")
+	public String homeEmp(){
+		return "emp";
+	}
+	
+}
+
+
+
+
+
+
+
+
+

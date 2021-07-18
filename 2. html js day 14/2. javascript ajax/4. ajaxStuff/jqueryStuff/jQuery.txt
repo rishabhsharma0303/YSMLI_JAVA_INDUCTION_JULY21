@@ -1,0 +1,168 @@
+jQuery
+====================
+
+the prime purpose of jQuery 
+is simplification of DOM processing.
+
+jQuery is JS
+
+
+
+
+jQuery is a fast and concise JavaScript Library that 
+simplifies HTML document traversing, event handling, 
+animating, and Ajax interactions for rapid web development. 
+
+
+jQuery is designed to change the way that 
+you write JavaScript.
+
+
+Ex:
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js">
+</script>
+
+<script>
+$(document).ready(function(){
+  $("p").click(function(){
+    $(this).hide();
+  });
+});
+</script>
+</head>
+<body>
+<p>If you click on me, I will disappear.</p>
+<p>Click me away!</p>
+<p>Click me too!</p>
+</body>
+</html>
+
+
+
+
+
+AJAX example with jQuery:
+--------------------
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<script src="........"></script>
+
+<script>
+$(document).ready(function(){
+    $("button").click(function(){
+        $("#div1").load("demo_test.txt");
+    });
+});
+</script>
+</head>
+<body>
+
+<div id="div1"><h2>Let jQuery AJAX Change This Text</h2></div>
+
+<button>Get External Content</button>
+
+
+Note:
+-----
+ jQuery load() method is a powerful AJAX method
+
+ What it does?
+ --------------
+	$(selector).load(URL,data,callback);
+
+	The load() method loads data from a server and puts the returned data into the selected element.
+
+	$("#div1").load("demo_test.txt");
+
+
+
+ Much better code:
+ ----------------
+$("button").click(function(){
+    $("#div1").load("demo_test.txt", function(responseTxt, statusTxt, xhr){
+        if(statusTxt == "success")
+            alert("External content loaded successfully!");
+        if(statusTxt == "error")
+            alert("Error: " + xhr.status + ": " + xhr.statusText);
+    });
+});
+
+
+
+ get from server:
+ ------------
+
+$("button").click(function(){
+    $.get("demo_test.asp", function(data, status){
+        alert("Data: " + data + "\nStatus: " + status);
+    });
+});
+
+
+fetching json and printing
+-----------------------------
+<body>
+
+	<ul></ul>
+
+	<button>Users</button>
+
+	<script src="jquery-3.1.1.js" type="text/javascript"></script>
+	<script src="my_script.js" type="text/javascript"></script>
+</body>
+
+
+json_data.json
+---------------
+{
+   "p1": { 
+           "name": "Satish",
+		          "age":   25,
+		          "company": "hcl"
+         },
+ 
+ 
+   "p2": {
+           "name": "Kiran",
+		          "age":   28,
+		          "company": "blackrock"   
+         }			 		 		 
+}
+
+my_script.js
+---------------
+$("button").click( function() {
+ $.getJSON( "json_data.json", function(obj) { 
+  $.each(obj, function(key, value) { 
+         $("ul").append("<li>"+value.name+"</li>");
+  });
+ });
+});
+
+
+
+http://www.w3schools.com/jquery/jquery_ajax_intro.asp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

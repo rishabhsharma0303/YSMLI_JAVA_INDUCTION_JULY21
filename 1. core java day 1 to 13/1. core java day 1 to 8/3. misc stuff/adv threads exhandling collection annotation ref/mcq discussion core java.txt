@@ -1,0 +1,751 @@
+
+
+What is the op?
+---------------------
+
+class T{
+	public static final int temp=100;
+	static {
+		System.out.println(" i am static block");
+	}
+}
+public class Demo {
+
+	public static void main(String[] args) {
+		
+		System.out.println(T.temp);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+What happens if remove final?
+
+
+
+What happens?
+
+public class Demo {
+
+	Demo(){
+		System.out.println("inside ctr");
+	}
+	Demo demo=new Demo();
+	public static void main(String[] args) {
+		
+		new Demo();
+		
+	}
+}
+
+
+
+
+
+
+
+
+
+interface A{
+	public static final int i=0;
+	public abstract void foo();
+}
+class B implements A{
+   private void foo(){}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+default void foof(){}
+static void foofStatic(){}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+What is the o/p?
+------------------
+public class Demo {
+	
+
+	public static void main(String[] args) {
+		
+		Integer i1=127;
+		Integer i2=127;
+		System.out.println(i1==i2);
+		
+		Integer i3=128;
+		Integer i4=128;
+		System.out.println(i3==i4);
+	}
+}
+
+
+
+
+
+
+
+// Integer.valueOf();
+Integer cache ( for performance)
+
+
+
+
+
+
+c
+
+
+
+
+null with static method : What will be the O/P?
+------------------
+
+class A{
+	public static void foo(){
+		System.out.println(" i am static  method");
+	}
+}
+public class Demo {
+	
+	public static void main(String[] args) {
+
+		A a=null;
+		a.foo();
+		
+	}
+
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Car i=new Car();
+Car j=Car();
+if(i==j){
+}
+
+
+Which code with compile?
+-----------------------------
+
+Integer val=new Integer(null);
+String s=new String (null);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ambigous ctr call
+------------------
+What if i run it?
+
+
+
+
+
+
+
+
+What is the op?
+---------------------
+
+
+		Set<String> s=new HashSet<String>();
+		s.add("QA");
+		s.add("dev");
+		System.out.println(s);
+
+		
+		Set<String> s2=new HashSet<String>(){{
+			add("QA"); 
+			s.add("dev");
+		}};
+		
+		System.out.println(s2);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		=> double brace init {{ }}
+		=> first brace create an annomous class and inner brace is used to init....... 
+
+
+
+
+
+What is the op?
+--------------------
+
+public class Demo {
+
+	public static void main(String[] args) {
+
+		System.out.println(returnSomething());
+		
+	}
+
+	private static int returnSomething() {
+		try{
+			return 5;// throws new NullPointerException();
+		}finally{
+			return 9;
+		}
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+	=>maigic of finally
+	=>never ever return value from finally block ? why? 
+
+
+
+
+
+autoboxing, int and wrapper classes
+----------------------------------
+
+What is the op?
+---------------
+
+		Long l=new Long(0);
+		System.out.println(l.equals(0));
+
+
+
+
+
+
+
+
+
+What is the O/P?
+-----------------
+
+class Cat{
+	public static void meow(){
+		System.out.println("meow");
+	}
+}
+
+class CostlyCat extends Cat{
+	public static void meow(){
+		System.out.println("costly meow");
+	}
+}
+public class Demo {
+
+	public static void main(String[] args) {
+
+		Cat c=new CostlyCat();
+		
+		c.meow();
+	}
+
+
+}
+
+
+
+
+
+What is the O/P?
+-----------------
+
+
+
+class Cat{
+	public static String foo="value";
+}
+
+class CostlyCat extends Cat{
+	 private static String foo="value2";
+}
+public class Demo {
+
+	public static void main(String[] args) {
+
+		System.out.println(new CostlyCat().foo);
+	}
+}
+
+
+
+
+
+	=>hiding superclass variable method
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+What is the O/P?
+-----------------
+
+Autoboxing, Inheritance and Overriding
+--------------------------------------
+class A{
+	
+	void method(int i){
+		System.out.println("base method ");
+	}
+}
+class B extends A{
+	void method(Integer i){
+		System.out.println("overriden method ");
+	}
+	
+}
+public class Demo {
+
+	public static void main(String[] args) {
+		A a=new B();
+		a.method(22);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Constructor overloading and NULL
+---------------------------------
+
+What is the op?
+------------------
+
+
+public class Confusion {
+
+	public Confusion(Object o){
+		System.out.println("public Confusion(Object o)");
+	}
+	
+	public Confusion(double[] o){
+		System.out.println("public Confusion( double[] o)");
+	}
+			
+	public static void main(String[] args) {
+		
+		new Confusion(null);
+		
+	}
+	
+}
+
+
+
+
+
+
+
+
+character addition, subtraction
+-------------------------------
+		System.out.println("H" + "i");
+		System.out.println('H'+'i');
+
+	// on add of char java convert them to there ascii value
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+double subtraction and BigDecimal-
+------------------------------------
+What is the op?
+-------------
+
+		double d=1.1-1.00;
+		
+		if(d==0.10)
+			System.out.println("hello");
+		else
+			System.out.println("hi");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	Why?
+
+	=> never compare double , float , object with ==
+	=> actual value of d is not 0.10
+
+	What to do?
+	---------
+	=> if you want to manipulate double never use double / float
+	use BigDecimal class
+
+	Correct approach?
+	----------------
+	BigDecimal d2=new BigDecimal("1.10").subtract(new BigDecimal("1.00"));
+		System.out.println(d2);
+		
+		
+		if(d2.doubleValue()==0.10)
+			System.out.println("hello");
+		else
+			System.out.println("hi");
+
+
+
+
+
+
+
+
+What is the op?
+------------------
+
+	class Foo {
+		private int i;
+	
+		public Foo(int i) {
+			this.i = i;
+		}
+	
+		public boolean equals(Foo obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Foo other = (Foo) obj;
+			if (i != other.i)
+				return false;
+			return true;
+		}
+	
+	}
+	
+	public class Confusion {
+	
+		public static void main(String[] args) {
+	
+			Object f1 = new Foo(22);
+			Object f2 = new Foo(22);
+			
+			System.out.println(f1==f2);
+	
+		}
+	
+	}
+
+
+
+
+
+
+
+
+
+
+What is the op?
+---------------------
+
+public class Confusion {
+	
+	private static Random random=new Random();
+	public static void main(String[] args) {
+
+		StringBuffer word=null;
+		switch (random.nextInt(5)) {
+		case 1:
+			word=new StringBuffer('M');
+			break;
+
+		default:
+			word=new StringBuffer('N');
+		}
+	
+		word.append('a');
+		word.append('b');
+		
+		System.out.println(word);
+	}
+
+}
+
+
+
+
+
+
+
+	=> StringBuffer Constructor and Char
+
+
+
+
+
+
+
+
+
+
+
+What is the op?
+------------------
+
+class String {
+
+}
+
+public class Confusion {
+
+	public static void main(String[] args) {
+		System.out.println("hi");
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

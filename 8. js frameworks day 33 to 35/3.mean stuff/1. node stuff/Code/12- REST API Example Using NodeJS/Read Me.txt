@@ -1,0 +1,9 @@
+-> In this excercise, Server exposes data using REST approach and also CoRS is enabled. It means any application from different domain (cross domain) can access resources from this server.
+
+Place "Lec25" folder in xampp\httdocs. This is PHP project which is making hits to following links for data
+
+http://127.0.0.1:8081/Student/GetAll
+http://127.0.0.1:8081/Student/GetById/1
+
+-> Run server.bat file
+-> Then Run Apche Server for PHP application and then access http://localhost/Lec25/home.php

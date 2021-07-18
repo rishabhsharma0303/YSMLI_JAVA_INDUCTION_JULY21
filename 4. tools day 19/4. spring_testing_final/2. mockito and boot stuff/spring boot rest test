@@ -1,0 +1,309 @@
+Spring boot test step by step:
+------------------------------
+
+@Entity
+@Table(name="branch_table")
+public class Branch {
+	@Id @GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Long branchId;
+
+	private String branchCode;
+	private String branchAddress;
+	private String contactPerson;
+	private String phone;
+}
+
+@Repository
+public interface BranchRepository extends JpaRepository<Branch, Long> {
+}
+
+
+public interface BranchService {
+	public Branch getBranchById(Long id);
+	public List<Branch> getAllBranch();
+	public Branch addBranch(Branch branch);
+	public Branch updateBranch(Branch branch);
+	
+}
+
+@Service
+@Transactional
+public class BranchServiceImpl implements BranchService {
+
+	
+	private BranchRepository branchRepository;
+
+	@Autowired
+	public BranchServiceImpl(BranchRepository branchRepository) {
+		this.branchRepository = branchRepository;
+	}
+	@Override
+	public Branch getBranchById(Long id) {
+//		return branchRepository.getOne(id);
+		return  branchRepository.findById(id).orElseThrow(
+				() -> new ResourceNotFoundException("branch information is not found"));
+	}
+	@Override
+	public List<Branch> getAllBranch() {
+		return branchRepository.findAll();
+	}
+
+	@Override
+	public Branch addBranch(Branch branch) {
+		return branchRepository.save(branch);
+	}
+
+	@Override
+	public Branch updateBranch(Branch branch) {
+		return branchRepository.save(branch);
+	}
+
+}
+
+
+
+@ResponseStatus(value=HttpStatus.INTERNAL_SERVER_ERROR)
+public class ResourceNotFoundException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
+
+	public ResourceNotFoundException(String message) {
+		super(message);
+	}
+}
+
+
+
+@RestController
+@RequestMapping(path="/api")
+public class BranchController {
+	
+	@Autowired
+	private BranchService branchService;
+	
+	@GetMapping(path="branch")
+	public ResponseEntity<List<Branch>>getAllBranches(){
+		return ResponseEntity.ok().body(branchService.getAllBranch());
+	}
+	
+	@GetMapping(path="branch/{branchId}")
+	public ResponseEntity<Branch>getOneBranch(@PathVariable(name="branchId")Long branchId){
+		return ResponseEntity.ok().body(branchService.getBranchById(branchId));
+	}
+	
+
+	@PutMapping(path="branch/{branchId}")
+	public ResponseEntity<Branch>updateBranch(@PathVariable(name="branchId")Long branchId,
+			@RequestBody Branch branch){
+		Branch branchToUpdate=branchService.getBranchById(branchId);
+		branchToUpdate.setBranchAddress(branch.getBranchAddress());
+		branchToUpdate.setContactPerson(branch.getContactPerson());
+		branchToUpdate.setPhone(branch.getPhone());;
+		Branch branch2=branchService.updateBranch(branchToUpdate);
+		return ResponseEntity.ok().body(branch2);
+	}
+
+	@PostMapping(path="branch")
+	public ResponseEntity<Branch>addBranch(@RequestBody Branch branch){
+		Branch branch2=branchService.addBranch(branch);
+		return ResponseEntity.ok().body(branch2);
+	}
+}
+
+
+
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+
+@RunWith(MockitoJUnitRunner.class)
+public class BranchServiceTest {
+	
+	@InjectMocks 
+	BranchServiceImpl branchServiceImpl;
+	
+	@Mock
+	BranchRepository branchRepository;
+	
+	@Test
+	public void testAllBranchesAreTwo(){
+		List<Branch> branchs=Arrays.asList(new Branch("A123", "Delhi", "raj", "3645545"));
+		when(branchRepository.findAll())
+		.thenReturn(branchs);
+		List<Branch> branches2=branchServiceImpl.getAllBranch();
+		Assert.assertEquals(branchRepository.findAll().size(), branches2.size());
+	}
+	
+	@Test
+	public void testGetBranchById(){
+		Branch branch=new Branch(1L, "A213", "delhi", "raj", "645454555");
+		when(branchRepository.getOne(1L)).thenReturn(branch);
+		 assertThat(branchServiceImpl.getBranchById(1L)).isEqualTo(branch);
+	}
+	
+	@Test
+	public void testUpdateBranch(){
+		Branch branch=new Branch(1L, "A213", "delhi", "raj", "645454555");
+		branch.setBranchAddress("banglore");
+		
+		Branch branchUpdated=new Branch(1L, "A213", "banglore", "raj", "645454555");
+		
+		when(branchRepository.save(branch)).thenReturn(branchUpdated);
+		assertThat(branchServiceImpl.updateBranch(branch)).isEqualTo(branch);
+	}
+	
+	
+}
+
+
+change to sec: 
+.antMatchers("/api/branch/**").hasAnyAuthority("ROLE_ADMIN")
+
+
+Using testtemplate to check endpoints
+----------------------------------------
+public class BranchControllerUtil {
+
+	public static void main(String[] args) {
+		BranchControllerUtil util = new BranchControllerUtil();
+		// util.getBranchById();
+		// util.getAllBranch();
+		// util.addBranch();
+		util.updateBranch();
+	}
+
+	 public void deleteBranch() {
+	    	HttpHeaders headers = getHeaders();  
+	        RestTemplate restTemplate = new RestTemplate();
+		    String url = "http://localhost:8090/bankapp/api/branch/{branchId}";
+	        HttpEntity<Branch> requestEntity = new HttpEntity<Branch>(headers);
+	        restTemplate.exchange(url, HttpMethod.DELETE, requestEntity, Void.class, 26);        
+	    }
+	    
+	
+	
+	public void updateBranch() {
+		HttpHeaders headers = getHeaders();
+		RestTemplate restTemplate = new RestTemplate();
+		String url = "http://localhost:8090/bankapp/api/branch/{branchId}";
+		Branch branch = new Branch("2wA", "kochi new", "teja", "45566566");
+
+		HttpEntity<Branch> request = new HttpEntity<>(branch, headers);
+		Map<String, String> param = new HashMap<String, String>();
+		param.put("branchId", "26");
+		
+		Branch result = restTemplate.exchange(url, HttpMethod.PUT, request,
+				Branch.class, param).getBody();
+		System.out.println(result);
+
+	}
+
+	public void addBranch() {
+		HttpHeaders headers = getHeaders();
+
+		RestTemplate restTemplate = new RestTemplate();
+		String url = "http://localhost:8090/bankapp/api/branch";
+		Branch branch = new Branch("2wA", "chennai", "teja", "45566566");
+
+		HttpEntity<Branch> request = new HttpEntity<>(branch, headers);
+
+		Branch result = restTemplate.postForObject(url, request, Branch.class);
+		System.out.println(result);
+
+	}
+
+	public void getBranchById() {
+		HttpHeaders headers = getHeaders();
+		RestTemplate restTemplate = new RestTemplate();
+		String url = "http://localhost:8090/bankapp/api/branch/{branchId}";
+		HttpEntity<String> requestEntity = new HttpEntity<String>(headers);
+		ResponseEntity<Branch> responseEntity = restTemplate.exchange(url,
+				HttpMethod.GET, requestEntity, Branch.class, 1);
+
+		Branch branch = responseEntity.getBody();
+		System.out.println(branch);
+	}
+
+	public void getAllBranch() {
+		HttpHeaders headers = getHeaders();
+		RestTemplate restTemplate = new RestTemplate();
+		String url = "http://localhost:8090/bankapp/api/branch";
+		HttpEntity<String> requestEntity = new HttpEntity<String>(headers);
+		ResponseEntity<Branch[]> responseEntity = restTemplate.exchange(url,
+				HttpMethod.GET, requestEntity, Branch[].class);
+		Branch[] branches = responseEntity.getBody();
+
+		for (Branch b : branches) {
+			System.out.println(b);
+		}
+
+	}
+
+	private HttpHeaders getHeaders() {
+		String credential = "r@r.com:raj";
+		String encodedCredential = new String(Base64.encodeBase64(credential
+				.getBytes()));
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.add("Authorization", "Basic " + encodedCredential);
+		return headers;
+	}
+
+}
+
+
+Spring boot rest controller:
+-----------------------------
+
+
+@RunWith(SpringRunner.class)
+@WebMvcTest(value=BranchController.class)
+public class BranchControllerTest {
+
+	@Autowired
+	private MockMvc mockMvc;
+	
+	@MockBean
+	private BranchService branchService;
+	
+
+	public String mapToJson(Object object) throws JsonProcessingException{
+		ObjectMapper objectMapper=new ObjectMapper();
+		return objectMapper.writeValueAsString(object);
+	}
+	
+	@Test
+	public void testGetBranchById() throws Exception{
+		Branch mockBranch=new Branch(11L, "22", "delhi", "raj", "64545454554");
+		when(branchService.getBranchById(Mockito.anyLong())).thenReturn(mockBranch);
+		String uri="api/branch/11";
+		
+		RequestBuilder builder=MockMvcRequestBuilders.get(uri).accept(MediaType.APPLICATION_JSON);
+		
+		MvcResult mvcResult=mockMvc.perform(builder).andReturn();
+		
+		String expectedJson=this.mapToJson(mockBranch);
+		String outputJson=mvcResult.getResponse().getContentAsString();
+		assertThat(outputJson).isEqualTo(expectedJson);
+		
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

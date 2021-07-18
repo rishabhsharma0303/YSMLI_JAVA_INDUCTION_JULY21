@@ -1,0 +1,2 @@
+node mysqltest.js
+pause

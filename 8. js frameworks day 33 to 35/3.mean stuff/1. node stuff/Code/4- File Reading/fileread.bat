@@ -1,0 +1,2 @@
+node fileread.js
+pause

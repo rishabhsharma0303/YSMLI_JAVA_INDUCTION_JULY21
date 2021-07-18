@@ -1,0 +1,8 @@
+
+hib lob:
+------
+https://www.baeldung.com/hibernate-lob
+
+hib life cycle:
+------------
+http://learningviacode.blogspot.com/2012/02/hibernate-object-life-cycle.html

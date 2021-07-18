@@ -1,0 +1,61 @@
+version: '3'
+services:
+  customer:
+    image: rajiv2018/ms-customer:1.0
+    ports:
+      - "8081:8081"
+    networks:
+      - ms-network
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://eureka-server:8761/eureka
+  product:
+    image: rajiv2018/ms-product:1.0
+    ports:
+      - "8082:8082"
+    networks:
+      - ms-network
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://eureka-server:8761/eureka
+  product2:
+    image: rajiv2018/ms-product2:1.0
+    ports:
+      - "8083:8083"
+    networks:
+      - ms-network
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://eureka-server:8761/eureka
+  order:
+    image: rajiv2018/ms-order:1.0
+    ports:
+      - "8080:8080"
+    networks:
+      - ms-network
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://eureka-server:8761/eureka
+  api-gateway:
+    image: rajiv2018/ms-api-gateway:1.0
+    ports:
+      - "8100:8100"
+    networks:
+      - ms-network
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://eureka-server:8761/eureka
+
+  eureka-server:
+    image: rajiv2018/ms-eureka:1.0
+    ports:
+      - "8761:8761"
+    networks:
+      - ms-network
+networks:
+  ms-network:

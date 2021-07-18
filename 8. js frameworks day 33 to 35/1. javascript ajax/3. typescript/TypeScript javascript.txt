@@ -1,0 +1,420 @@
+Typescript tutorial
+_________________
+
+	What is typescript?
+	______________-
+	=> TypeScript is an open-source programming language developed and maintained by Microsoft
+	
+	=>  As TypeScript is a superset of JavaScript, existing JavaScript programs are also valid 				TypeScript programs. 
+
+	=> TypeScript may be used to develop JavaScript applications for both
+		 client-side and server-side (Node.js) execution
+
+	Why typescript?
+	_________________
+	=> adds optional static typing to the language
+
+	=>  TypeScript is designed for development of large applications 
+		and transcompiles to JavaScript
+
+	=> TypeScript makes code easier to read and understand. 
+
+	=> huge improvement over plain JavaScript. 
+
+	=> TypeScript gives us all the benefits of ES6 (ECMAScript 6), plus more productivity.
+
+
+	Advantage:
+	___________
+	=> easy code management
+	=> Support ecma script
+	=> oo wrapper looks like java, c#
+	=> ide support
+
+
+
+
+gettting started
+_______________
+
+installation: npm install -g typescript
+
+tsc demo.ts --watch
+
+
+
+run tsc command to check version
+
+
+greet.ts
+-----------
+function greet(person:string) {
+    return "Hello, " + person;
+}
+
+let user = "rajeev gupta";
+
+greet(user);
+
+
+converting to js: tsc greet.ts
+
+
+it error to do:
+let user=11;
+
+
+
+
+Typescript datatypes/Variable decleration
+________________________________________
+what is types ? how to use type? number, boolean, string etc
+
+boolean
+let isJobDone:boolean = false;
+//Number
+let myNum:number = 4;
+
+//text string
+
+let myName:string = "raj";
+
+//template strings
+let greeting : strign ="hello,"+myName;
+
+let greeting : strign =`hello ${myName}';
+
+
+//arrays
+let count : Array<number> = [1,2,3,4];
+
+
+// if you dont know the type
+ let anything : any = 4;
+ anything ="some text";
+
+ anything = false;
+
+//return nothing
+
+ function greet(name: string) : void {
+	console.log(`hello ${name}`);
+ }
+
+//enums
+ let joyStStatus  1;
+ enum Directions{UP, DOWN, LEFT, RIGHT};
+  if(joyStStatus ===1){
+
+  }
+
+  if(joyStStatus ===Directions.UP){
+
+  }
+ enum Color{RED, BLUE, GREEN};
+ 
+ IF(Color === 1){
+
+ }
+
+Note typescript array:
+____________________
+
+When we declare the array:
+
+let data=['hello','bye'];
+
+and then add 66(number ts gives error)
+
+data[1]=66;
+
+in below case ts dont give error:
+____________________
+let data=['hello','bye',55];
+data[1]=66;
+
+
+
+
+
+typescript union type:
+________________________
+let data: string | number="raja"
+
+
+
+
+
+Interface in typescript:
+________________________
+	=>  interface is a syntactical contract that an entity should conform to
+	
+	=> Interfaces define properties, methods, and events, which are the members of the interface. 
+
+	=> Interfaces contain only the declaration of the members. It is the responsibility of the 				deriving class to define the members. 
+
+	=> It often helps in providing a standard structure that the deriving classes would follow.
+
+
+interface Person {
+    firstName: string;
+    lastName: string;
+}
+
+
+
+
+function hello(person: Person) {
+    return "Hello, " + person.firstName + " " + person.lastName;
+}
+
+let user = { firstName: "raj", lastName: "gupta" };
+
+Ex2:
+-----
+
+interface IPerson { 
+   firstName:string, 
+   lastName:string, 
+   sayHi: ()=>string 
+} 
+
+var customer:IPerson = { 
+   firstName:"ravi",
+   lastName:"kumar", 
+   sayHi: ():string =>{return "Hi there"} 
+} 
+
+console.log("Customer Object ") 
+console.log(customer.firstName) 
+console.log(customer.lastName) 
+console.log(customer.sayHi())  
+
+var employee:IPerson = { 
+   firstName:"ekta",
+   lastName:"gupta", 
+   sayHi: ():string =>{return "Hello!!!"} 
+} 
+  
+console.log("Employee  Object ") 
+console.log(employee.firstName);
+console.log(employee.lastName);
+
+
+
+
+Interfaces and Inheritance
+__________________________
+
+	=> an interface can inherit from other interface. 
+	=> Typescript allows an interface to inherit from multiple interfaces.
+
+
+
+interface Person { 
+   age:number 
+} 
+
+interface Musician extends Person { 
+   instrument:string 
+} 
+
+
+let drummer = <Musician>{}; 
+drummer.age = 27 
+drummer.instrument = "Drums" 
+console.log("Age:  "+drummer.age) console.log("Instrument:  "+drummer.instrument)
+
+
+
+typescript classes:
+__________________
+
+class Car { 
+   engine:string; 
+   
+   constructor(engine:string) { 
+      this.engine = engine 
+   }  
+   
+   disp():void { 
+      console.log("Function displays Engine is  :   "+this.engine) 
+   } 
+} 
+
+var obj = new Car("XXSY1")
+
+console.log("Reading attribute value Engine as :  "+obj.engine)  
+
+obj.disp()
+
+
+https://dev.to/satansdeer/typescript-constructor-shorthand-3ibd
+
+
+Inheritance ex :
+________________
+
+
+
+class Emp{
+    
+    constructor( private name: string, private add:string){
+    }
+    print():void{
+        console.log(`the person details are ${this.name}and ${this.add}`)
+    }
+}
+class Programmer extends Emp{
+   
+    constructor( name: string,  add:string, private pl: string){
+        super(name, add);
+       
+    }
+    print():void{
+        super.print();
+        console.log(`the person details are ${this.pl}`)
+    }
+}
+
+
+
+Typescript inheritacnce:
+_______________________
+class Shape { 
+   Area:number 
+   
+   constructor(a:number) { 
+      this.Area = a 
+   } 
+} 
+
+class Circle extends Shape { 
+   disp():void { 
+      console.log("Area of the circle:  "+this.Area) 
+   } 
+}
+  
+var obj = new Circle(223); 
+obj.disp()
+
+
+
+
+TypeScript ─ Class inheritance and Method Overriding
+_________________________________________________
+
+class PrinterClass { 
+   doPrint():void {
+      console.log("doPrint() from Parent called…") 
+   } 
+} 
+
+class StringPrinter extends PrinterClass { 
+   doPrint():void { 
+      super.doPrint() 
+      console.log("doPrint() is printing a string…")
+   } 
+} 
+
+var obj = new StringPrinter() 
+obj.doPrint()
+
+
+
+TypeScript ─ static method
+____________________________
+
+
+class StaticMem {  
+   static num:number; 
+   
+   static disp():void { 
+      console.log("The value of num is"+ StaticMem.num) 
+   } 
+} 
+
+StaticMem.num = 12     // initialize the static variable 
+StaticMem.disp()      // invoke the static method
+
+
+
+
+
+TypeScript ─ module
+___________________
+	=> A module is designed with the idea to organize code written in TypeScript
+
+ module in typescript 
+ what is  module
+ make 2 files and make the module
+ use them in single file
+
+consider two files:
+
+student.ts
+_________
+
+class Login{
+    data="student login";
+}
+
+teacher.ts
+__________
+class Login{
+    data="teacher login";
+}
+
+
+now how to solve the problem:
+____________________
+
+
+student.ts
+_________
+export default class Login{
+    data="student login";
+}
+
+teacher.ts
+__________
+export default class Login{
+    data="teacher login";
+}
+
+
+app.ts:
+________
+import stLogin from './st';
+import teLogin from './te';
+
+let teacher=new teLogin();
+let student=new stLogin();
+console.log(teacher);
+console.log(student);
+
+
+
+Configuration file in TypeScript
+_______________________
+
+How to make it 
+	tsc --init
+
+create folders src and output
+	=> we want to put our src in src folder and output to output folder
+
+	    "outDir": "./output",               
+     	     "rootDir": "./src",    
+
+
+
+What we can config
+Try out with  some configuration
+
+
+
+
+https://www.tutorialsteacher.com/typescript/typescript-class
+
+

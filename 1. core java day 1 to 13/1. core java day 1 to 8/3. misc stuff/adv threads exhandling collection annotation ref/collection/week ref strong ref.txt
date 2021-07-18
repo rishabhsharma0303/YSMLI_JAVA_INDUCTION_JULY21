@@ -1,0 +1,96 @@
+Types Of References In Java 
+---------------------------:
+Strong, Soft, Weak And Phantom
+
+One of the beauty of the Java language is that it doesn’t put burden of memory management on the programmers. 
+Java automatically manages the memory on the behalf of the programmers. 
+Java programmers need not to worry  about freeing the memory after the objects are no more required. 
+
+Garbage Collector Thread does this for you. This thread is responsible for sweeping out unwanted objects from the memory. But, you have no control over garbage collector thread. 
+
+You can’t make it to run whenever you want. It is up to JVM which decides when to run garbage collector thread. 
+But, with the introduction of java.lang.ref classes, 
+you can have little  control over when your objects will be garbage collected.
+
+Depending upon how objects are garbage collected, references to those 
+objects in java are grouped into 4 types. They are,
+
+
+
+1) Strong References
+2) Soft References
+3) Weak References
+4) Phantom References
+
+
+
+Ex:
+------
+
+
+public class Employee {
+
+	private Integer id;
+	private String name;
+	
+	public Employee(Integer id, String name) {
+		super();
+		this.id = id;
+		this.name = name;
+	}
+	
+	@Override
+	public String toString() {
+		return "Employee [id=" + id + ", name=" + name + "]";
+	}
+}
+
+
+package com.day7.session1;
+
+import java.lang.ref.PhantomReference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+
+public class ClientTest {
+
+	public static void main(String[] args) throws InterruptedException {
+		strongReference();
+		//weakReference();
+		//softReference();
+		//phantomReference();
+	}
+
+	private static void strongReference() {
+		Employee emp = new Employee(1441, "foo");//Strong reference
+		emp = null; // Eligible for GC
+	}
+	
+	private static void weakReference() {
+		Employee emp = new Employee(1441, "foo");
+		WeakReference<Employee> weakReference = new WeakReference<Employee>(emp);
+		System.out.println(weakReference.get());
+		emp = null;
+		System.gc();
+		System.out.println(weakReference.get());
+	}
+	
+	private static void softReference() {
+		Employee emp = new Employee(1441, "foo");
+		SoftReference<Employee> softReference = new SoftReference<Employee>(emp);
+		System.out.println(softReference.get());
+		emp = null;
+		System.gc();
+		System.out.println(softReference.get());
+	}
+	
+	private static void phantomReference() throws InterruptedException {
+		Employee emp = new Employee(1441, "foo");
+		ReferenceQueue<Employee> referenceQueue = new ReferenceQueue<Employee>();
+		PhantomReference<Employee> phantomReference = new PhantomReference<Employee>(emp, referenceQueue);
+		System.out.println("Phantom reference deleted:");
+		System.out.println(phantomReference.get());
+		
+	}
+}

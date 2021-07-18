@@ -1,0 +1,7 @@
+#%p			 %d 							%C 		%M 	%m 					%n"
+INFO 2021-02-09 14:28:04,233 com.demo.DemoLogging main hello to logging 
+DEBUG 2021-02-09 14:28:04,236 com.demo.DemoLogging main Hello 
+INFO 2021-02-09 14:28:04,236 com.demo.DemoLogging main Hello 
+WARN 2021-02-09 14:28:04,236 com.demo.DemoLogging main Hello 
+ERROR 2021-02-09 14:28:04,236 com.demo.DemoLogging main Hello 
+FATAL 2021-02-09 14:28:04,236 com.demo.DemoLogging main Hello 

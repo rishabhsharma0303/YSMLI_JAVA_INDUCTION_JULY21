@@ -1,0 +1,148 @@
+AJAX
+===============
+
+What is AJAX?
+-----------------------
+
+	=> AJAX is the art of exchanging data with the server  and updating 
+		part of web pages-without reloading the whole page asynchronously 
+
+
+Key technologies involved?
+------------------------------
+
+	JavaScript
+	------------
+	 that allows for interaction with the browser and responding to events.
+
+	DOM 
+	---------
+	for accessing and manipulating the structure of the HTML of the page.
+
+	XML 
+	---------
+	which represents the data passed between the server and client. 
+
+	An XMLHttpRequest 
+	---------------
+	object for asynchronously exchanging the XML data between the client and the server
+
+
+AJAX process?
+----------------
+	
+Steps:
+	html: Gives ids to input elements that will be read by script
+
+	1. Define an object for sending HTTP requests
+	2. Initiate request
+	3. Get request object
+		Designate a request handler function
+
+		Supply as onreadystatechange attribute of request
+
+		Initiate a GET or POST request to a JSP page
+
+	4. Send data
+
+	5. Handle response
+
+	6. Wait for readyState of 4 and HTTP status of 200
+
+	7. Extract return text with responseText or responseXML, Do something with result
+
+
+
+
+
+AJAX hello World
+==================
+
+	index.html
+	------------
+
+	<button onclick="load('loadhere','foo.jsp')">load ajax contents</button>
+	<div id="loadhere"></div>
+
+	<script type="text/javascript" src="demo.js"></script>
+
+
+
+	foo.jsp
+	---------
+		<%= new java.util.Date() %>
+
+	demo.js
+	--------
+	function load(id, url){
+	
+	var ajaxObject=null; 
+	
+	 if (window.XMLHttpRequest)
+		 ajaxObject=new XMLHttpRequest(); 
+	 
+	 else if(window.ActiveXObject) /*ie 6 and 7*/
+		 ajaxObject=new ActiveXObject("Microsoft.XMLHTTP"); 
+	 
+	 if(ajaxObject!=null){ 
+		 /*Open an GET request for resource url asynch.*/
+		 ajaxObject.open("GET",url,true);
+		 ajaxObject.send(null);
+	 }
+	 else{
+		 alert("Not having suitable browser ...");
+	 }
+	 
+	ajaxObject.onreadystatechange=function(){
+		if(ajaxObject.readyState==4 && ajaxObject.status==200){
+			document.getElementById(id).innerHTML=ajaxObject.responseText;
+		}
+	};
+
+      }
+
+
+
+
+
+AJAX hello World with servlet:
+===============================
+
+
+Servlet
+------------
+
+public class ShowTime extends HttpServlet {
+	@Override
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		response.setHeader("Cache-Control", "no-cache");
+		response.setHeader("Pragma", "no-cache");
+		PrintWriter out = response.getWriter();
+		Date currentTime = new Date();
+		String message = String.format("It is now %tr on %tD.", currentTime,
+				currentTime);
+		out.print(message);
+	}
+}
+
+
+index.html
+---------------
+
+	<input type="button" value="Show Server Time"
+		onclick='ajaxResult("show-time", "timeResult1")' />
+	<div id="timeResult1" class="ajaxResult"></div>
+
+
+
+
+
+	
+
+
+
+
+
+
+

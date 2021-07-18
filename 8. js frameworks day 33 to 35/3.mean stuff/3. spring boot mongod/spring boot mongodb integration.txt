@@ -1,0 +1,343 @@
+Spring boot mongodb integration:
+________________________________
+choose dependencies: web, devtools, mongo
+step 1: Dao layer
+____________________
+
+@Document(collection = "employees")
+public class Employee {
+	@Id
+	private String id;
+	private String name;
+	private int age;
+	
+	public Employee(String name, int age) {
+		super();
+		this.name = name;
+		this.age = age;
+	}
+	
+	
+}
+
+
+@Repository
+public interface EmpRepo extends MongoRepository<Employee, String>{
+
+}
+
+
+step 2: service layaer
+_______________________
+
+public interface EmployeeService {
+	public List<Employee> getAll();
+	public Employee getEmployeeById(String id);
+	public Employee save(Employee emp);
+	public Employee delete(String empId);
+	public Employee update(String empId, Employee emp);
+}
+
+
+@Service
+@Transactional
+public class EmployeeServiceImpl implements EmployeeService {
+	
+	@Autowired
+	private EmpRepo empRepo;
+	
+	@Override
+	public List<Employee> getAll() {
+		return (List<Employee>) empRepo.findAll();
+	}
+
+	@Override
+	public Employee getEmployeeById(String id) {
+		return empRepo.findById(id).orElseThrow(EmployeeNotFoundException:: new);
+	}
+
+	@Override
+	public Employee save(Employee emp) {
+		return empRepo.save(emp);
+	}
+
+	@Override
+	public Employee delete(String empId) {
+		Employee employeeToDelete=getEmployeeById(empId);
+		empRepo.delete(employeeToDelete);
+		return employeeToDelete;
+	}
+
+	@Override
+	public Employee update(String empId, Employee emp) {
+		Employee employeeToUpdate=getEmployeeById(empId);
+		employeeToUpdate.setName(emp.getName());
+		employeeToUpdate.setAge(emp.getAge());
+		return empRepo.save(employeeToUpdate);
+	}
+
+}
+
+
+public class EmployeeNotFoundException extends RuntimeException{
+}
+
+
+
+step 3: rest controller layaer
+_______________________________
+@RestController
+public class EmployeeRestController {
+
+	
+	private EmployeeService employeeService;
+	
+	@Autowired
+	public EmployeeRestController(EmployeeService employeeService) {
+		this.employeeService = employeeService;
+	}
+	
+	@GetMapping(path="employee", produces=MediaType.APPLICATION_JSON_VALUE)
+	public List<Employee> allEmployees(){
+		return employeeService.getAll();
+	}
+	
+	@GetMapping(path="employee/{id}",produces=MediaType.APPLICATION_JSON_VALUE )
+	public Employee getEmployeeById(@PathVariable(name="id")String id){
+		return employeeService.getEmployeeById(id);
+	}
+	
+	@PostMapping(path="employee",produces=MediaType.APPLICATION_JSON_VALUE, 
+			consumes=MediaType.APPLICATION_JSON_VALUE )
+	public Employee addEmployee(@RequestBody Employee employee){
+		return employeeService.save(employee);
+	}
+	
+	@PutMapping(path="employee/{id}",produces=MediaType.APPLICATION_JSON_VALUE, 
+			consumes=MediaType.APPLICATION_JSON_VALUE )
+	public Employee updateEmployee(@PathVariable(name="id") String id,   @RequestBody Employee emp){
+		return  employeeService.update(id, emp);
+		
+	}
+	
+	
+	@DeleteMapping(path="employee/{id}",produces=MediaType.APPLICATION_JSON_VALUE)
+	public Employee deleteEmplloyee(@PathVariable(name="id") String id){
+		return employeeService.delete(id);
+	}
+}
+
+
+
+
+step 4: initilizer
+___________________
+
+@SpringBootApplication
+public class Empapp2Application implements CommandLineRunner {
+
+	@Autowired
+	private EmployeeService empService;
+	
+	public static void main(String[] args) {
+		SpringApplication.run(Empapp2Application.class, args);
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+		System.out.println("rec are saved...");
+		empService.save(new Employee("raj", 33));
+		empService.save(new Employee("ekta", 30));
+		empService.save(new Employee("gunika", 10));
+		empService.save(new Employee("keshav", 5));
+	}
+
+}
+
+
+step 5: application.properties
+___________________
+server.servlet.context-path=/empapp
+server.port=8080
+spring.data.mongodb.host=localhost
+spring.data.mongodb.port=27017
+spring.data.mongodb.database=mongodb
+spring.data.mongodb.repositories.enabled=true
+
+
+
+
+Case study:
+__________
+
+
+@Document(collection = "Hotels")
+public class Hotel {
+    @Id
+    private String id;
+    private String name;
+    @Indexed(direction = IndexDirection.ASCENDING)
+    private int pricePerNight;
+    private Address address;
+    private List<Review> reviews;
+}
+
+
+
+public class Address {
+    private String city;
+    private String country;
+}
+
+
+public class Review {
+    private String userName;
+    private int rating;
+    private boolean approved;
+}
+
+
+@Repository
+public interface HotelRepository extends MongoRepository<Hotel,String>, QueryDslPredicateExecutor<Hotel> {
+    Hotel findById(String id);
+    List<Hotel> findByPricePerNightLessThan(int maxPrice);
+
+    @Query(value = "{address.city:?0}")
+    List<Hotel> findByCity(String city);
+}
+
+
+
+
+
+
+@RestController
+@RequestMapping("/hotels")
+public class HotelController {
+    private HotelRepository hotelRepository;
+
+    public HotelController(HotelRepository hotelRepository) {
+        this.hotelRepository = hotelRepository;
+    }
+
+    @GetMapping("/all")
+    public List<Hotel> getAll(){
+        List<Hotel> hotels = this.hotelRepository.findAll();
+
+        return hotels;
+    }
+
+    @PutMapping
+    public void insert(@RequestBody Hotel hotel){
+        this.hotelRepository.insert(hotel);
+    }
+
+    @PostMapping
+    public void update(@RequestBody Hotel hotel){
+        this.hotelRepository.save(hotel);
+    }
+
+    @GetMapping("/{id}")
+    public Hotel getById(@PathVariable("id") String id){
+        Hotel hotel = this.hotelRepository.findById(id);
+
+        return hotel;
+    }
+
+    @GetMapping("/price/{maxPrice}")
+    public List<Hotel> getByPricePerNight(@PathVariable("maxPrice") int maxPrice){
+        List<Hotel> hotels = this.hotelRepository.findByPricePerNightLessThan(maxPrice);
+
+        return hotels;
+    }
+
+    @GetMapping("/address/{city}")
+    public List<Hotel> getByCity(@PathVariable("city") String city){
+        List<Hotel> hotels = this.hotelRepository.findByCity(city);
+
+        return hotels;
+    }
+
+    @GetMapping("/country/{country}")
+    public List<Hotel> getByCountry(@PathVariable("country") String country){
+        // create a query class (QHotel)
+        QHotel qHotel = new QHotel("hotel");
+
+        // using the query class we can create the filters
+        BooleanExpression filterByCountry = qHotel.address.country.eq(country);
+
+        // we can then pass the filters to the findAll() method
+        List<Hotel> hotels = (List<Hotel>) this.hotelRepository.findAll(filterByCountry);
+
+        return hotels;
+    }
+
+    @GetMapping("/recommended")
+    public List<Hotel> getRecommended(){
+        final int maxPrice = 100;
+        final int minRating = 7;
+
+        // create a query class (QHotel)
+        QHotel qHotel = new QHotel("hotel");
+
+        // using the query class we can create the filters
+        BooleanExpression filterByPrice = qHotel.pricePerNight.lt(maxPrice);
+        BooleanExpression filterByRating = qHotel.reviews.any().rating.gt(minRating);
+
+        // we can then pass the filters to the findAll() method
+        List<Hotel> hotels = (List<Hotel>) this.hotelRepository.findAll(filterByPrice.and(filterByRating));
+
+        return hotels;
+    }
+}
+
+
+
+
+@Component
+public class DbSeeder implements CommandLineRunner {
+    private HotelRepository hotelRepository;
+
+    public DbSeeder(HotelRepository hotelRepository) {
+        this.hotelRepository = hotelRepository;
+    }
+
+    @Override
+    public void run(String... strings) throws Exception {
+        Hotel taaj = new Hotel(
+                "taaj",
+                130,
+                new Address("Delhi", "India"),
+                Arrays.asList(
+                        new Review("raj", 8, false),
+                        new Review("ekta", 7, true)
+                )
+        );
+
+        Hotel itc = new Hotel(
+                "ITC",
+                90,
+                new Address("Delhi", "India"),
+                Arrays.asList(
+                        new Review("Anil", 9, true)
+                )
+        );
+
+        Hotel lodhi = new Hotel(
+                "The lodhi",
+                200,
+                new Address("Delhi", "India"),
+                new ArrayList<>()
+        );
+
+        // drop all hotels
+        this.hotelRepository.deleteAll();
+
+        //add our hotels to the database
+        List<Hotel> hotels = Arrays.asList(taaj, itc, lodhi);
+        this.hotelRepository.save(hotels);
+    }
+}
+
+
+

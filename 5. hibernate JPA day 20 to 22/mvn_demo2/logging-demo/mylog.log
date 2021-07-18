@@ -1,0 +1,14 @@
+2021-02-09 14:39:40 INFO  DemoLogging:17 - hello world logging
+2021-02-09 14:40:13 INFO  DemoLogging:17 - hello world logging
+2021-02-09 14:40:13 ERROR DemoLogging:23 - For input string: "abc123" occured
+2021-02-09 14:41:10 INFO  DemoLogging:17 - hello world logging
+2021-02-09 14:41:21 INFO  DemoLogging:17 - hello world logging
+2021-02-09 14:41:21 ERROR DemoLogging:23 - java.lang.NumberFormatException: For input string: "abc123"NumberFormatException occured
+2021-02-09 14:41:57 INFO  DemoLogging:17 - hello world logging
+2021-02-09 14:41:57 ERROR DemoLogging:23 - java.lang.NumberFormatException: For input string: "abc123"NumberFormatException occured
+2021-02-09 14:41:57 DEBUG DemoLogging:26 - step by step of a famework
+2021-02-09 14:42:45 FATAL DemoLogging:26 - too critical problem
+2021-02-09 14:44:08 FATAL com.demo.DemoLogging:26 - too critical problem
+2021-02-09 14:44:28 FATAL demo.DemoLogging:26 - too critical problem
+2021-02-09 14:44:43 FATAL DemoLogging:26 - too critical problem
+2021-02-09 14:52:24 INFO  DemoLoggingSlf4j:11 - logging hello world

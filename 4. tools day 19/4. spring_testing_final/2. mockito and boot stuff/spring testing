@@ -1,0 +1,57 @@
+Spring junit:
+===========
+https://www2.slideshare.net/renatoprimavera
+Configuration spring test:
+-----------------------------
+@ContextConfiguration(locations = "classpath:model-config.xml")
+@RunWith(SpringJUnit4ClassRunner.class)// SpringRunner.class
+public class BookDaoImplTest {
+
+	@Autowired
+	private BookService bookService;
+
+	@Test
+	@Transactional
+	@Rollback(false)
+	public void testAddDepartment() {
+		Book book=new Book("QW12", "spring", "ekta", new Date(), 500);
+		bookService.addBook(book);
+		System.out.println(bookService.getAllBooks().size());
+	}
+
+}
+
+
+testing bookbyId:
+------------------
+     Integer id = 1;
+     
+    Book book = bookService.findById(id);
+     
+    assertEquals("-----", book.getTitle());  
+
+
+
+testing allBooks:
+-------------------
+ 	List<Book> allBooks=bookService.findAll();
+	Assertions.assertFalse(bookService.isEmpty()) 
+
+testing delete:
+--------------
+
+    Integer id = 1;
+    Book book = bookService.findById(id);
+     
+    Book delBook = bookService.delBook(id);
+    
+     book = bookService.findById(id);
+    Assertions.assertNull(book);   
+
+
+
+
+
+
+
+

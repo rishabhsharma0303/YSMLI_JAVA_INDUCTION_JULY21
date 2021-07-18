@@ -1,0 +1,65 @@
+<html>
+<head>
+<script src="js/jquery.js"></script>
+<script>
+	$(document).ready(function(){
+		
+		$("#btnShow").click(function(){
+		
+			var data = {"action": "showall"};
+		
+			var settings= {
+				type: "GET",
+				dataType: "json",
+				url: "showuser",
+				data: data,
+				success: function(response) {
+					for(var key in response.data)
+					{
+						var row = response.data[key];
+						var $div = $("<div class='box'>");
+						$div.append("ID:"+row.id+" <br>");
+						$div.append("name:"+row.name+"<br>");
+						$div.append("Age:"+row.age);
+						
+						$(".container").append($div);
+						console.log(row);
+						
+					}
+				},
+				error: function (err, type, httpStatus) {
+				}
+			};
+			
+			$.ajax(settings);
+			console.log('request sent');
+			return false;			
+		});//end of show all
+		
+	});
+</script>
+
+<style>
+.box {
+ padding:5px;
+ border: solid 1px red;
+ wdith:200px;
+ float:left;
+ margin: 5px;
+}
+</style>
+
+</head>
+<body>
+
+
+<input type="submit" name="btnShow" id="btnShow" value="Show All Data" />
+<div class="container">
+</div>
+
+
+
+    
+    
+</body>
+</html>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+	<session-factory>
+		<!-- database connection setting -->
+		<property name="connection.url">jdbc:mysql://localhost:3306/yms_demo2?useSSL=false</property>
+		<property name="connection.username">root</property>
+		<property name="connection.password">root</property>
+		<property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+		<property name="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</property>
+
+		<!-- disable the second level cache -->
+		<property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
+
+		<property name="show_sql">true</property>
+
+		<property name="format_sql">true</property>
+
+		<!-- orm framework -->
+		<!-- hbm2ddl : hibernate to DDL -->
+		<!-- update, create, create-drop, validate create : will crete the new 
+			table each time when app run create-drop: table is created at each run.. 
+			as soon as app shut down drop that table (test env) validate: dnt create/ 
+			modifty the table at any cost, just validation that? update: dont create 
+			new table, if it already exist, if table is not there it will create new 
+			table if u have extra field in pojo it update the table accordingly... -->
+		<property name="hibernate.hbm2ddl.auto">update</property>
+
+		<!-- jdbc connection pool build in -->
+
+		<property name="connection.pool_size">10</property>
+
+		<property name="current_session_context_class">thread</property>
+		<!-- <mapping class="com.demo.mapping.one2many.uni.Dept" /> <mapping class="com.demo.mapping.one2many.uni.Employee" 
+			/> -->
+
+		<!-- <mapping class="com.demo.mapping.one2many.uni.Department" /> <mapping 
+			class="com.demo.mapping.one2many.uni.Employee" /> -->
+
+		<!-- <mapping class="com.demo.lifecycle.Customer" /> -->
+
+		<!-- <mapping class="com.demo.mapping.inh.singletable.Account" />
+		<mapping class="com.demo.mapping.inh.singletable.SavingAccount" />
+		<mapping class="com.demo.mapping.inh.singletable.CurrentAccount" /> -->
+		
+	<!-- 	<mapping class="com.demo.mapping.inh.joined.Account" />
+		<mapping class="com.demo.mapping.inh.joined.SavingAccount" />
+		<mapping class="com.demo.mapping.inh.joined.CurrentAccount" />
+		 -->
+		 
+	<!-- 	<mapping class="com.demo.mapping.inh.joined2.Account" />
+		<mapping class="com.demo.mapping.inh.joined2.SavingAccount" />
+		<mapping class="com.demo.mapping.inh.joined2.PoorSavingAccount" />  -->
+		
+		<mapping class="com.demo.doubts.Customer"/>
+	</session-factory>
+</hibernate-configuration>

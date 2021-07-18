@@ -1,0 +1,1001 @@
+
+
+junit 5 : testing 
+____________________
+
+junit 5: fundamentals:
+------------------------
+To define one Test case we should use
+  a. JUnit 5 Annotations  
+  b. JUnit 5 Assert API
+
+=> Here, JUnit Runtime is provided with 3 components and one platform runtime.
+   i. JUnit Jupiter Engine (JUnit 5 API)
+  ii. JUnit Vintage Engine (JUnit 4 and 3 APIs)
+  iii. Integration (TestNg, Mock...etc)
+
+
+Dependencies:
+--------------
+<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.6.2</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+
+Hello world
+
+Some imp Junit 5 annotations
+-----------------------------
+
+
+@Test
+@DisplayName
+@BeforeEach
+@AfterEach
+@BeforeAl
+@AfterAll
+@Disable
+@TestMethodOrder
+@RepeatTest
+@Tag
+@ParameterizedTest
+....
+....
+
+
+
+Demo:
+
+@BeforeEach : To execute any logic once per test method before starting test method.
+@AfterEach  : To execute any logic once per test method after finishing test method.
+
+@BeforeAll : To execute any logic once per test case before starting.
+@AfterAll  : To execute any logic once per test case after finishing.
+
+Demo @Order
+-----------
+
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+
+public class TestEmployee {
+
+	@Order(value = 1)
+	@Test
+	public void testSave() {
+		System.out.println("saving");
+	}
+	
+	@Order(value = 3)
+	@Test
+	public void testUpdate() {
+		System.out.println("updating ");
+	}
+	
+	@Order(value = 2)
+	@Test
+	public void testDelete() {
+		System.out.println("deleting");
+	}
+}
+
+Demo @TestMethodOrder:
+------------------
+@TestMethodOrder : We can define multiple test methods inside Testcase.
+ Those are executed in Random order by default.
+
+We can specify our own order using @TestMethodOrder + OrderAnnotation
+Here we need to provide @Order(number).
+
+
+@TestMethodOrder(OrderAnnotation.class)
+public class TestEmployee {
+
+	@Order(value = 1)
+	@Test
+	public void testSave() {
+		System.out.println("saving");
+	}
+	
+}
+
+
+We can use @TestMethodOrder(Alphanumeric.class) for provide test method order.
+First sort using 0-9 if same found then compare with A-Z sorting order.
+
+
+
+
+@DisplayName : 
+		This annotation is used to provide 'Readable text' inplace of
+                   actual method and class names at JUnit console.
+
+Eg:
+DisplayName("test for employee dao")
+public class TestEmployee {
+
+	@DisplayName("test for saving employee dao")
+	@Test
+	public void testSave() {
+		System.out.println("saving");
+	}
+	//
+
+}
+
+
+
+Injecting TestInfo to get valuable informations
+----------------------------------------------
+	To know our Test case details like classname,method name, display name,tag name etc
+   	we can use one interface TestInfo.
+
+public class TestEmployee {
+
+	@DisplayName("test for saving employee dao")
+	
+	@Test
+	public void testSave(TestInfo info) {
+		System.out.println(info.getTestMethod().toString());
+		System.out.println("saving");
+	}
+	
+}
+
+
+@Disabled :    This annotation is used to specify Ignore one Test-method 
+               while executing test-case (do not execute test method)
+
+
+
+
+
+
+@RepeatedTest 
+---------------
+=> To execute any test method multiple time (like batch processing) using
+    @RepeatedTest annotation.
+
+public class TestEmployee {
+
+	
+	@RepeatedTest(value = 3)
+	@Test
+	public void testUpdate() {
+		System.out.println("updating ");
+}
+
+Ex:
+@DisplayName("TESTING EMPLOYEE TASK")
+public class TestEmployee {
+	
+	@RepeatedTest(value = 3,name="{displayName} - {currentRepetition}/{totalRepetitions}")
+	@DisplayName("MULTIPLE TEST")
+	public void testMultiple(TestInfo info) {
+		//System.out.println("HELLO:"+info.getTestClass().get().getName());
+		//System.out.println("HELLO:"+info.getTestMethod().get().getName());
+		System.out.println("HELLO:"+info.getDisplayName());
+	}
+	
+}
+
+
+
+
+
+@Tag 
+	These are used to filter test methods for execution in different environments.
+
+	For Example, i want to test export example in production env at same
+	    i want to test delete operation only in development environment 
+	then use tag concept and maven-surefire-plugin in pom.xml
+
+@DisplayName("test for employee dao")
+public class TestEmployee {
+
+	@DisplayName("test for saving employee dao")
+
+	@Test
+	public void testSave(TestInfo info) {
+		System.out.println(info.getTestMethod().toString());
+		System.out.println("saving");
+	}
+	@Tag(value = "dev")
+	@Test
+	public void testUpdate() {
+		System.out.println("updating ");
+	}
+	
+	@Tag(value = "prod")
+	@Test
+	public void testDelete() {
+		System.out.println("deleting");
+	}
+}
+
+
+pom.xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>int.nit</groupId>
+	<artifactId>JUnit5App</artifactId>
+	<version>1.0</version>
+
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.6.2</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M5</version>
+				<configuration>
+					<!-- include tags -->
+					<groups>prod</groups>
+					<!-- exclude tags -->
+					<excludedGroups>dev</excludedGroups>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+
+
+AssertEquals() methods
+-----------------------
+https://junit.org/junit5/docs/5.0.1/api/org/junit/jupiter/api/Assertions.html
+
+
+Assert API : 
+ It is used to validate Test, IS CURRENT TEST PASS/FAIL?
+ Expected Value is compared with Actual Result.
+
+=> JUnit 5 has provided class : Assertions (org.junit.jupiter.api)
+   which contains all static method "assert methods".
+
+=> assert methods are used to compare Expected values with Actual Result.
+  If matching TEST PASS, else TEST FAIL.
+
+=> Ex assert method : assertEquals(expected, actual)
+    This method is used to compared expected value with actual value
+------------------------Code---------------------------
+1. Create one Maven simple project
+
+2. pom.xml 
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.6.2</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+3. Define one class under src/main/java which needs testing
+
+package in.nit.service;
+public class Message {
+
+	public String showMsg(String name) {
+		return "Welcome to: Mr/Mrs/Ms "+name;
+	}
+}
+
+4. TestCase under src/test/java
+
+package in.nit.test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import in.nit.service.Message;
+
+public class TestMessage {
+
+	// Declare variables
+	private Message m;
+	private String expected;
+	private String actual;
+
+	//provide init-data 
+	@BeforeEach
+	public void setup() {
+		m = new Message();
+		expected = "Welcome to :SAM";
+		actual = "";
+	}
+
+	//Do Unit Test
+	@Test
+	public void testShowMsg() {
+		actual = m.showMsg("SAM");
+		assertEquals(expected, actual,"Data may not be matching!");
+	}
+
+	//clear heap data /clear memory.
+	@AfterEach
+	public void clean() {
+		m = null;
+		expected = actual = null;
+	}
+
+}
+------------------------------------------------------------------------------
+
+*) assertNotNull() / assertNull()
+
+assertNotNull(object):
+   This method is used to specify that given object is not a null value
+   it holds data some data, else TEST FAIL.
+
+assertNull(object): it indicates given object is null, else TEST FAIL.
+
+
+*) assertDoesNotThrow(Executable) : 
+   This is used to specify that our method call is not throwing any exception,
+   else if it throwing then TEST FAIL.
+
+--Code---------------
+1. Project code
+
+package in.nit.util;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class DbConnection {
+
+	public Connection getCon() throws ClassNotFoundException, SQLException {
+		Connection con=null;
+		Class.forName("com.mysql.jdbc.Driver");
+		con=DriverManager.getConnection("jdbc:mysql://localhost:3306/test","root","root");
+
+		return con;
+	}
+}
+
+2. Unit Test code
+package in.nit.test;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.sql.Connection;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import in.nit.util.DbConnection;
+
+public class TestDbConnection {
+
+	private DbConnection dbc;
+	private Connection con;
+
+	@BeforeEach
+	public void initData() {
+		dbc=new DbConnection();
+	}
+
+	@Test
+	public void testGetCon() {
+		assertDoesNotThrow(()->{
+			con=dbc.getCon();
+		});
+		assertNotNull(con,"Connection is Not created, Please check!");
+	}
+
+	@AfterEach
+	public void clean() {
+		dbc = null;
+		con = null;
+	}
+
+}
+-----------------------------------------------------------
+*) assertSame(ob1,ob2): This method is used to test that GIVEN TWO REFERENCES are POINTED TO ONE OBJECT?
+  If yes TEST PASS, else TEST FAIL.
+
+Q) What is the diff b/w assertSame() and assertEquals()?
+A) assertEquals () : compares two objects data
+   assertSame()  : compares object references.
+
+*) fail() : This is used for testing multiple conditions, 
+       if they are not met Manually FAIL TEST CASE.
+
+--Example: Testing Singleton DB Connections---
+1. pom.xml
+	<properties>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.6.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.47</version>
+		</dependency>
+
+
+2. Project code
+
+package in.nit.util;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class DbConUtil {
+
+	private static Connection con;
+	
+	static {
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		try {
+			DriverManager.getConnection("jdbc:mysql://localhost:3306/test","root","root");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static Connection getCon() {
+		return con;
+	}
+	
+	
+}
+
+3. test case
+
+package in.nit.test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.sql.Connection;
+
+import org.junit.jupiter.api.Test;
+
+import in.nit.util.DbConUtil;
+
+public class TestDbConUtil {
+
+	@Test
+	public void testGetCon() {
+		Connection con1=DbConUtil.getCon();
+		Connection con2=DbConUtil.getCon();
+
+		//assertNotNull(con1,"Connection not created..");
+		if(con1==null || con2==null ) {
+			//TEST CASE IS FAILED
+			fail("CONNECTIONS ARE NOT CRATED..");
+		}
+		assertSame(con1, con2,"May not be Same Connection!");
+	}
+}
+
+------------------------------------------------------------
+*) assertArrayEquals() :use this method to compare data of two arrays (expected, actual)
+
+Test case:
+package in.nit.test;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import org.junit.jupiter.api.Test;
+public class TestSample {
+
+	@Test
+	public void testNormal() {
+		int expected[] = {10,20,30};
+		int actual[] = {10,20};
+		assertArrayEquals(expected, actual,"Data may not be same in two arrays!");
+	}
+
+}
+
+
+*)assertTrue()/assertFalse()
+  These methods are used to test one boolean condition/expression/value.
+
+  assertTrue(): boolean value is expected as TRUE, else TEST FAIL.
+  assertFalse(): boolean value is expected as FALSE, else TEST FAIL.
+
+--Example--
+package in.nit.test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+public class TestSample {
+
+	@Test
+	public void testNormal() {
+		boolean exist = false;
+		assertTrue(exist,"Data may not exist!");
+	}
+}
+
+
+*) assertThrows(): Expecting that our logic thorws one expcetion as : T (Type)
+  assertThrows(ExpectedExceptionType.class, ()-> {our logic});
+
+
+-_Ex_-
+package in.nit.test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+
+public class TestSample {
+
+	@Test
+	public void testNormal() {
+		assertThrows(NullPointerException.class, ()->{
+			throw new ArrayIndexOutOfBoundsException();
+		});
+		
+	}
+
+}
+
+-----------------------------
+assertAll(Executable...) : This is used to group all asset test methods and execute once.
+   If all are PASS then TEST IS PASS, If one FAIL then TEST IS FAIL.
+
+-_Ex_-
+package in.nit.test;
+
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.sql.Connection;
+import org.junit.jupiter.api.Test;
+import in.nit.util.DbConUtil;
+public class TestSample {
+
+	@Test
+	public void testNormal() {
+		assertAll(
+				()->{
+					assertNotNull(DbConUtil.getCon());
+				},
+				()->{
+					Connection con1,con2;
+					con1=DbConUtil.getCon();
+					con2=DbConUtil.getCon();
+					assertSame(con1, con2);
+				},
+				()->{
+					Connection con1,con2;
+					con1=DbConUtil.getCon();
+					con2=DbConUtil.getCon();
+					if(con1==null && con2==null) {
+						fail();
+					}
+				}
+				);
+		
+	}
+
+}
+
+*)NOTE:
+Executable is function interface that is having abstract method
+  void execute() throws Throwable;
+
+
+
+
+
+
+
+public class Calculator {
+
+    public int add(int n1, int n2) {
+
+        if(n1 < -100 || n2 < -100){
+            throw new RuntimeException("Numbers less than 100 are not allowed");
+        }
+
+        if(n1 > 50000 || n2 > 50000){
+            throw new TooLargeNumbers("Negative Numbers not allowed");
+        }
+
+        if(n1 > 40_000 && n2 > 40_000){
+            System.out.println("Numners are too large.. It's going to take time");
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return n1+n2;
+    }
+
+    public int subtract(int n1, int n2){
+        if(n1<n2){
+            return 0;
+        }
+        return n1-n2;
+    }
+
+    public int multiply(int n1, int n2){
+        return n1*n2;
+    }
+
+    public int divide(int n1, int n2){
+        if(n2==0){
+            return 0;
+        }
+        return n1/n2;
+    }
+
+    public boolean isSumAllowed(int num){
+        if(num>100_000){
+            return false;
+        }
+        return true;
+    }
+}
+
+
+
+public class Equation {
+    public static void main(String[] args) {
+        int n1=100;
+        int n2=2000;
+
+        Calculator calculator = new Calculator();
+
+        //equation = n1 + n2 * (n1 - n2) - (n1 / n2)
+        int p2 = calculator.subtract(n1, n2);
+        int p3 = calculator.divide(n1, n2);
+        int a1 = calculator.multiply(n2, p2);
+        int a2 = calculator.add(n1, a1);
+        int result = calculator.subtract(a2, p3);
+
+        System.out.println(result);
+    }
+}
+
+
+
+public class TooLargeNumbers extends RuntimeException {
+    public TooLargeNumbers(String message) {
+        super(message);
+    }
+}
+
+
+
+
+Example Junit5:
+_________________
+
+@Tag("standard")
+public class StandardTests {
+
+
+    @BeforeAll
+    static void initAll() {
+        System.out.println("@BeforeAll");
+    }
+
+    @BeforeEach
+    void init() {
+        System.out.println("@BeforeEach");
+    }
+
+    @Test
+    void succeedingTest() {
+    }
+
+    @Test
+    void failingTest() {
+        fail("a failing test");
+    }
+
+    @Test
+    @Disabled("for demonstration purposes")
+    void skippedTest() {
+        // not executed
+    }
+
+    @Test
+    void abortedTest() {
+        assumeTrue("abc".contains("Z"));
+        fail("test should have been aborted");
+    }
+
+    @AfterEach
+    void tearDown() {
+        System.out.println("@AfterEach");
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+        System.out.println("@AfterAll");
+    }
+
+}
+
+
+@DisplayName("Calculator Add test cases")
+@Tag("calcAdd")
+public class CalculatorAddTest {
+
+    private Calculator calculator = new Calculator();
+
+
+    @Nested
+    @DisplayName("All the positive cases")
+    class PositiveCases {
+        @Test
+        @DisplayName("Calculator Add test case - when both numbers are positive")
+        void addTestCase1() {
+            //sample data
+            // expected data - 30
+            int n1 = 10;
+            int n2 = 20;
+            int expected = 30;
+            int sum = calculator.add(n1, n2);
+
+            assertEquals(expected, sum);
+        }
+
+        @Test
+        @DisplayName("Calculator Add test case - when both numbers are negative")
+        void addTestCase2() {
+            //sample data
+            // expected data - 30
+            int n1 = -10;
+            int n2 = -20;
+            int expected = -30;
+            int sum = calculator.add(n1, n2);
+
+            assertEquals(expected, sum);
+        }
+    }
+
+    @Nested
+    @DisplayName("Exception cases")
+    class ExceptionCases {
+        @Test
+        @DisplayName("Calculator Add test case - when  any number is less than -100")
+        void addTestCase3() {
+            RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> calculator.add(-101, 100));
+
+            assertEquals("Numbers less than 100 are not allowed", exception.getMessage());
+        }
+
+        @Test
+        @DisplayName("Calculator Add test case - when  any number is larger than 50000")
+        void addTestCase4() {
+
+            TooLargeNumbers exception = Assertions.assertThrows(TooLargeNumbers.class, () -> calculator.add(500001, 100));
+
+            assertEquals("Negative Numbers not allowed", exception.getMessage());
+        }
+    }
+
+
+    @Nested
+    @DisplayName("TImout cases..")
+    class TimeoutCases {
+
+        @Test
+        @DisplayName("Calculator Add test case - when  any number is larger than 40000 and taking time")
+        @Timeout(value = 1100, unit = TimeUnit.MILLISECONDS)
+        void addTestCase5() {
+
+            int sum = calculator.add(41000, 41000);
+
+            assertEquals(82000, sum);
+
+        }
+
+        @Test
+        @DisplayName("Calculator Add test case - when  any number is larger than 40000 and taking time")
+        void addTestCase6() {
+
+            int sum = assertTimeout(Duration.ofMillis(1010), () -> calculator.add(42000, 42000));
+
+            assertEquals(84000, sum);
+
+        }
+
+    }
+
+    @Test
+    @DisplayName("Assertion library demo")
+    void addTestCase7() {
+
+        assertTrue("str".equals("str"));
+        assertFalse(false);
+
+        String str = "arvind";
+        assertNotNull(str);
+
+        assertNotEquals(23, 43);
+
+    }
+
+    @Test
+    @DisplayName("Calculator Add test case - assertAll")
+    void addTestCase8() {
+
+        assertAll("mulitple test cases",
+                () -> assertEquals(46, calculator.add(23, 23)),
+                () -> assertEquals(460, calculator.add(230, 230)),
+                () -> assertEquals(8000, calculator.add(4000, 4000)));
+
+    }
+
+    @Nested
+    @DisplayName("Repeate tests demo")
+    class RepeatTestCases {
+
+        @RepeatedTest(10)
+        @DisplayName("Repeat test for timing info")
+        void addTestCase1() {
+
+            int sum = assertTimeout(Duration.ofMillis(1002), () -> calculator.add(42000, 42000));
+
+            assertEquals(84000, sum);
+
+        }
+    }
+}
+
+
+
+
+
+
+public class ParameterizedDemoTest {
+
+    @ParameterizedTest
+//    @EmptySource
+//    @NullSource
+//    @NullAndEmptySource
+    @ValueSource(strings = {"abc", "defc", "xyz"})
+    void testCase1(String arg) {
+
+        Assertions.assertTrue(!arg.isEmpty());
+    }
+
+    Calculator calculator = new Calculator();
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 34, 5, 6})
+    void testCase2(int arg) {
+
+        Assertions.assertTrue(calculator.isSumAllowed(arg));
+    }
+
+    @ParameterizedTest
+    @MethodSource("intRange")
+    void testCase3(int arg) {
+
+        Assertions.assertTrue(calculator.isSumAllowed(arg));
+    }
+
+    static IntStream intRange() {
+        return IntStream.range(10, 40);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "1, 2, 3",
+            "11, 20, 31",
+            "12, 20, 32",
+            "13, 20, 33"
+    })
+    void testCase4(int num1, int num2, int expected) {
+        assertEquals(expected, calculator.add(num1, num2));
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(resources = "/sample-data.csv", numLinesToSkip = 1)
+    void testCase5(int num1, int num2, int expected) {
+        assertEquals(expected, calculator.add(num1, num2));
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public class ExternalService {
+
+    public String getValidationData(String id){
+        return "actual data for validation";
+    }
+
+    void someMethod() throws RuntimeException{
+        System.out.println("doing nothing..");
+    }
+}
+
+public class MyService {
+
+    ExternalService externalService;
+
+    public MyService(ExternalService externalService) {
+        this.externalService = externalService;
+    }
+
+    public boolean validate(String id){
+        if(id ==null){
+            throw new RuntimeException("id is null");
+        }
+        if(externalService.getValidationData(id) != null){
+            return true;
+        }
+
+        return false;
+    }
+}
+
+
+

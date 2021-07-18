@@ -1,0 +1,11 @@
+String interview questions:
+---------------------
+1. reverse a string "hello" to "olleh"
+
+2. Removing special characters from java string
+ i/p : $jav%a&expert!	op: javaexpert
+ String val=str.replaceAll("[^	a-zA-Z0-9]","");
+
+2. Removing whilte spaces from java string
+ i/p :"   i a m   a java ex pert   "
+ String val=str.replaceAll("\\s","");

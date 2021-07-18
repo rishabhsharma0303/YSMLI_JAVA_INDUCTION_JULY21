@@ -1,0 +1,920 @@
+ES 6 tutorial
+==============
+
+1. setup
+2. var let , const and scope in es6
+3. templet literal 
+4. arrow function 
+	1. consize code
+	2. implicit return
+	3. no 'this' binding
+5. object Destructuring
+6. Classes and Inheritance
+
+
+
+
+1. setup
+----------
+setup : install node
+	visual code
+	npm install http-server -g
+
+hello world:
+---------
+console.log("hello to es6");
+
+run:
+---
+http-server -p 8085
+
+
+
+2. var let and scope in es6
+----------------------------
+ => variable declared in js is done with var
+ => ES 6 introduced: let and const
+
+
+problem with var:
+ ----------------
+1. scoping problem
+-----------------
+	=> scope of js variable is by default method scope ie
+
+	=> C/Java are block scoped NOT IN JS
+
+	eX:
+
+	var flag=true;
+	if(flag){
+		var fname="rajeev";
+	}
+
+
+
+	
+	=> our understanding ( from C) is that the life of fname should be within the block!
+
+	var flag=true;
+	if(flag){
+		var fname="rajeev";
+	}
+
+
+	
+	console.log(fname); // can be accessed
+
+
+
+
+	ex2:
+
+	 for(var i=0;i<10;i++){
+		var fname="rajeev";
+		console.log(fname +": " + i);
+	}
+
+	console.log(i);//still accessable?
+
+	As we have declared variable outside if
+
+	=> in javascript var has function scope
+
+	Advantage of let:
+	--------------
+	=> it solve scope issure with js
+
+
+if(flag){
+	let fname="rajeev";
+	console.log(fname);
+}
+console.log(fname);// give error
+
+	
+2. hoisting problem
+--------------------
+what is op?
+
+console.log(x);
+var x=33;
+
+op: undefined ! hoisting problem
+
+ 	=> at compilation time js engine allocate memeory, at compilation time decleation is done
+		and value is assigned at run time!
+
+	=> let dont allow hoisting :)
+
+
+console.log(x);
+let x=33;
+
+gives error!
+
+3. you can declared var variable multiple time
+---------------------------------------------
+	=> consider following code:
+
+var greeting="good morning";
+console.log(greeting);
+
+
+// after 100s of line of code by mistake: overriding variable by mistake
+var greeting="good eve";
+console.log(greeting);
+
+	=> it produce output! but it should have thrown error that multiple re decleation of variable
+
+	=> this problem solved by let, Identifier 'greeting' has already been declared
+
+
+4. const same as java
+---------------------
+const pi=3.1415;
+console.log(pi);
+pi=3.14;//error
+
+
+
+
+
+
+
+1. var hoisting and function scope:
+===================================
+
+what is the op of function when called? error
+-----------------------------------
+
+function greetPerson(name){
+    if (name==="rajeev"){
+        var greet="hello programmer";
+    }else{
+        var greet="hello person";
+    }
+
+    console.log(greet);
+}
+
+=> var is declared two time! its ok in js
+=> value of var is overriden second time
+
+
+function greetPerson(name){
+    if (name==="rajeev"){
+         greet="hello programmer";
+    }else{
+         greet="hello person";
+    }
+     var greet;
+    console.log(greet);
+}
+
+=> In this case js put var greet on the top of method defination (var hoisting )
+=> scope of var is function scope ( not the block scope!)
+=> var decleration is bit tricky ==> js introduce let and const
+
+
+
+let and const
+-------------
+
+function greetPerson(name){
+    if (name==="rajeev"){
+        let greet="hello programmer";
+    }else{
+        let greet="hello person";
+    }
+
+    console.log(greet);
+}
+
+Uncaught ReferenceError: greet is not defined
+    at greetPerson (main5.js:8)
+    at <anonymous>:1:1
+
+
+
+Solution:
+function greetPerson(name){
+    let greet;
+   
+    if (name==="rajeev"){
+         greet="hello programmer";
+    }else{
+         greet="hello person";
+    }
+
+    console.log(greet);
+}
+
+
+What about below code?
+------------------------
+function greetPerson(name){
+
+    if (name==="rajeev"){
+         greet="hello programmer";
+    }else{
+         greet="hello person";
+    }
+
+    console.log(greet);
+
+    let greet;
+}
+
+=> dont compile , no hoisting with let!
+
+
+let vs var scope:
+====================
+What is the op?
+
+var a=1;
+var b=10;
+if(a==1){
+    var a=10;
+    let b=20;
+    console.log(a);
+    console.log(b);
+}
+console.log(a);
+console.log(b);
+
+
+
+	=> let is blocked scope ( as it happens in c/c++/java)
+	=> var is function scope
+
+
+
+redecleration of var vs let
+---------------------------
+
+ var a=1;
+ var a=10;	works
+
+ let a=1;
+ let a=10;  gives error
+
+
+
+
+ var vs let in a loop
+-------------------
+
+for(var i=0; i<10;i++){
+    console.log(i);
+}
+
+console.log("====="+i);
+
+ => what if we replace var with let
+
+
+
+2. const in ES 6
+==================
+	=> same as const in c++, final in java
+
+	
+ Ex:
+let num=1;
+const num2=10;
+
+num2=33;
+
+	=> TypeError: Assignment to constant variable.
+
+
+
+const obj1={
+    name:"raj"
+}
+obj1={
+    name:"ravi"
+}
+
+
+	=> TypeError: Assignment to constant variable.
+
+
+const obj1={
+    name:"raj"
+}
+obj1.name="rajeev";
+
+	=> u can change the value inside obj1
+
+
+
+
+3. Arrow function, functional programming in js
+======================================
+
+	=> arrow function support functional programming in js
+	=> short hand notation
+
+Ex:
+
+var a=function(){
+    return 10;
+}
+
+var b=()=>10;
+const adder=(a, b)=> a+b;
+
+
+console.log(b);
+
+
+
+
+
+templete literal 
+================
+
+const person={
+	name:"rajeev gupta",
+	address:"delhi",
+	phone:"43544344444"
+};
+
+let strMsg= "my name is "+ person.name+": "+ " my address is "+ person.address;
+
+it is compilcated !
+
+
+Easy:
+let strMsg2=`my name is ${person.name} and my address is ${person.address}`;
+
+	=> templet literal remember formatting no need of \t \n  etc
+
+const strMsg3=`
+	my name is ${person.name}
+	my address is ${person.address}
+	mmy phone is ${person.phone}
+`	
+
+	=> function_name `some thing and ${something}`
+
+
+
+calling function with templete litral
+===========================
+function bio(x){
+	console.log(x);
+}
+
+const person={
+	name:"rajeev gupta",
+	address:"delhi",
+	phone:"43544344444"
+};
+
+
+bio `
+my name is ${person.name}
+my address is ${person.address}
+mmy phone is ${person.phone}
+`;
+
+
+
+
+
+
+
+
+
+
+4. arrow function 
+	1. consize code
+	2. implicit return
+	3. no 'this' binding
+-------------------------
+ Ex: //fucntion exprssion
+const square=function(x){
+	return x*x;
+}
+
+// with arror funtion
+
+const square2= x=> x*x;
+
+const add=(a, b)=> a+b;
+
+
+
+
+
+
+functional programming with javascript:
+===========================================
+filter , map, reduce, sort 
+//functional programming in es 6
+const companies = [
+	{name: "Company One", category: "Finance", start: 1981, end: 2003},
+	{name: "Company Two", category: "Retail", start: 1992, end: 2008},
+	{name: "Company Three", category: "Auto", start: 1999, end: 2007},
+	{name: "Company Four", category: "Retail", start: 1989, end: 2010},
+	{name: "Company Five", category: "Technology", start: 2009, end: 2014},
+	{name: "Company Six", category: "Finance", start: 1987, end: 2010},
+	{name: "Company Seven", category: "Auto", start: 1986, end: 1996},
+	{name: "Company Eight", category: "Technology", start: 2011, end: 2016},
+	{name: "Company Nine", category: "Retail", start: 1981, end: 1989}
+  ];
+  
+  const ages = [33, 12, 20, 16, 5, 54, 21, 44, 61, 13, 15, 45, 25, 64, 32];
+
+  //printing all companies details
+
+
+  for(let i=0; i< companies.length; i++){
+	  console.log(companies[i]);
+  }
+
+
+
+  //funcational way: forEach
+companies.forEach(function(company){
+	console.log(company);
+})
+
+//funcational way: forEach using => operator
+companies.forEach(company=>console.log(company))
+
+
+// all ages 21 and over
+
+const selectedAges=ages.filter( function(age){
+	if(age>= 21){
+		return true;
+	}
+
+})
+
+
+const selectedAges=ages.filter( age=>age >=21);
+console.log(selectedAges);
+
+
+
+
+
+//fiter retail companies
+const retailCompanies=companies.filter(function(company){
+	if(company.category=="Retail"){
+			return true;
+	}
+})
+
+console.log(retailCompanies);
+
+
+//fiter retail companies
+const retailCompanies=companies.filter(company=>company.category==="Retail");
+
+console.log(retailCompanies);
+
+
+
+
+
+
+//filter all 80's companies
+
+const companies80=companies.filter(function(company){
+	if(company.start>=1980 && company.start<=1990){
+		return true;
+	}
+});
+
+console.log(companies80);
+
+const companies80=companies.filter(company=>(company.start>=1980 && company.start<=1990));
+
+
+//company last for >= then 10 yr
+const companiesMore10= companies.filter(function(company){
+	if((company.end-company.start)>=10){
+		return true;
+	}
+})
+
+console.table(companiesMore10);
+
+const companiesMore10= companies.filter(company=>(company.end-company.start)>=10)
+
+
+map=> convert something to something else
+------------------------------------
+
+//create array of company names
+
+const companyNameArr=companies.map(function(company){
+	return company.name;
+})
+
+console.log(companyNameArr);
+
+const companyNameArr=companies.map(company=>company.name)
+
+
+//create array of company names and start date -end date
+// comapnyName[2009-2017]
+
+const companyNameArr2=companies.map(function(company){
+	return `${company.name} [${company.start}--${company.end}]`;
+})
+
+console.table(companyNameArr2);
+
+
+
+Sorting
+-----------------------------
+//sorting companies basis on start year
+
+const sortedComanies=companies.sort(function(c1, c2){
+	return	(c1.start> c2.start)?1:-1;
+});
+
+console.table(sortedComanies);
+
+
+
+object Destructuring 
+====================
+
+consider example:
+
+const msg={
+    name: "rajeev gupta",
+    desi:"trainer",
+    hobby:"traveling",
+    social:{
+        twitter:"@rajeev_gupta76",
+        facebook:"https://www.facebook.com/profile.php?id=100021806671318"
+    }
+}
+
+//how to print it
+const name=msg.name;
+const desi=msg.desi;
+const hobby= msg.hobby;
+const twitter=msg.social.twitter;
+
+console.log(name);
+console.log(hobby);
+console.log(twitter);
+
+
+
+//difficult to get data out of object and print it
+
+
+object Destructuring  provide easy syntex to do the same operation!
+
+
+const {name, desi, hobby, social}=msg;
+console.log(name);
+
+
+
+
+6. classes:
+===============
+	=> JavaScript classes have unique features that embrace the
+		 dynamic nature of the JavaScript
+
+prior ES6:
+---------
+	=> JavaScript had no classes. To mimic a class, 
+		we often use a constructor function
+
+function Animal(type) {
+    this.type = type;
+}
+ 
+Animal.prototype.identify = function() {
+    console.log(this.type);
+}
+ 
+var cat = new Animal('Cat');
+cat.identify(); // Cat
+
+
+
+	=> how it works?
+
+	=> First, we created the Animal as a constructor function 
+		that has a property name called type.
+
+	=>  The identify() method is assigned to the prototype so that it can be shared
+		 by all instances of the Animal type.
+
+	=> Then, we created a new instance of the Animal type using the new operator. 
+	The cat object, hence, is an instance of the Animal and of Object through 
+	prototypal inheritance.
+
+
+ES6 introduced a new syntax for creating a class:
+------------------------------------------------
+class Animal {
+    constructor(type) {
+        this.type = type;
+    }
+    identify() {
+        console.log(this.type);
+    }
+}
+ 
+let cat = new Animal('Cat');
+cat.identify();
+
+
+	=> The class declaration is just syntactic sugar of the constructor function,
+	 therefore, the result of the  typeof operator of the Animal class is  function.
+
+
+	console.log(typeof Animal); // function
+
+Class vs. custom type
+--------------------
+	=> First, class declarations are not hoisted like function declarations.
+	 For example, if you place the following code above the Animal class declaration section, 
+	 you will get a ReferenceError.
+
+
+	let dog = new Animal('Dog');
+	// Uncaught ReferenceError: Animal is not defined
+
+
+	=> calling the class constructor without the new operator will result in an error
+
+	let duck = Animal('Duck');
+	// Uncaught TypeError: Class constructor Animal cannot be invoked without 'new'
+
+
+
+
+JavaScript class expressions:
+--------------------------------
+	=> A class expression does not require an identifier after the class keyword. 
+
+	=> We  can use class expressions in variable declarations and pass
+	 them into a function as an argument
+
+
+
+
+let Animal = class {
+    constructor(type) {
+        this.type = type;
+    }
+    identify() {
+        console.log(this.type);
+    }
+}
+ 
+let duck = new Animal('Duck');
+ 
+console.log(duck instanceof Animal); // true
+console.log(duck instanceof Object); // true
+ 
+console.log(typeof Animal); // function
+
+
+js classes are First-class citizen:
+---------------------------------
+	=> JavaScript class is a first-class citizen. 
+	It means that you can pass a class into a function,
+	 return it from a function, and assign it to a variable.
+
+
+function factory(aClass) {
+    return new aClass();
+}
+ 
+let greeting = factory(class {
+    sayHi() {
+        console.log('Hi');
+    }
+});
+ 
+greeting.sayHi(); // 'Hi'
+
+
+
+Singleton with class:
+----------------------
+	iffi
+let app = new class {
+    constructor(name) {
+        this.name = name;
+    }
+    start() {
+        console.log(`Starting the ${this.name}...`);
+    }
+ 
+}('Awesome App');
+ 
+app.start(); // Starting the Awesome App.
+
+
+
+Getter and setter:
+------------------
+
+class Person {
+    constructor(firstName, lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+    get fullName() {
+        return this.firstName + ' ' + this.lastName;
+    }
+ 
+    set fullName(str) {
+        let names = str.split(' ');
+        if (names.length === 2) {
+            this.firstName = names[0];
+            this.lastName = names[1];
+        } else {
+            throw 'Invalid name format';
+        }
+ 
+    }
+}
+ 
+let mary = new Person('rajeev', 'Gupta');
+console.log(mary.fullName); // Mary Doe
+ 
+// set new name
+mary.fullName = 'Rajeev Gupta';
+console.log(mary.fullName); // Rajeev Gupta
+
+
+
+Static methods:
+--------------
+class Animal {
+    constructor(type) {
+        this.type = type;
+    }
+    identify() {
+        console.log(this.type);
+    }
+    static create(type) {
+        return new Animal(type);
+    }
+}
+ 
+var mouse = Animal.create('Mouse');
+mouse.identify(); // mouse
+
+
+Note: attempt to access the static method from an instance of the class results in an error.
+
+mouse.create('Monkey'); 
+// Uncaught TypeError: mouse.create is not a function
+
+
+
+
+
+6. inheritance (syntex suger)
+==============================
+	=> js dont support inheritance as in java, it use prototype inheritane
+	=> function is used for creating class
+	=> just to make life easy for java/c# dev
+
+	Let we first understand how classical js support oops using function and support 
+	prototype inheritance
+
+
+class Animal {
+    constructor(legs) {
+        this.legs = legs;
+    }
+    walk() {
+        console.log('walking on ' + this.legs + ' legs');
+    }
+}
+ 
+class Bird extends Animal {
+    constructor(legs) {
+        super(legs);
+    }
+    fly() {
+        console.log('flying');
+    }
+}
+ 
+ 
+let bird = new Bird(2);
+ 
+bird.walk();
+bird.fly();
+
+
+Ex2:
+class Bird extends Animal {
+    constructor(legs, color) {
+        super(legs);
+        this.color = color;
+    }
+    fly() {
+        console.log('flying');
+    }
+    getColor() {
+        console.log(this.color);
+    }
+}
+ 
+ 
+let pegion = new Bird(2, 'white');
+console.log(pegion.getColor())
+
+
+
+Shadowing methods:
+------------------
+	=> JavaScript allows you to add a new method in the derived class
+	 that has the same name as a method in the base class. In this case, when 
+	you call the method of an object of the derived class,
+	 that method will shadow the method in the base class.
+
+class Dog extends Animal {
+    constructor() {
+        super(4);
+    }
+    walk() {
+        console.log(`go walking`);
+    }
+}
+ 
+let bingo = new Dog();
+bingo.walk(); // go walking
+
+
+Note:
+to call method of  base class in the derived class, 
+	you use super.method() like this:
+
+
+
+class Dog extends Animal {
+    constructor() {
+        super(4);
+    }
+    walk() {
+        super.walk();
+        console.log(`go walking`);
+    }
+}
+ 
+let bingo = new Dog();
+bingo.walk();
+// walking on 4 legs
+// go walking
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Tutorial for js:
+---------------
+https://www.javascripttutorial.net/
+
+
+
+
+
+
+
+
+
+	

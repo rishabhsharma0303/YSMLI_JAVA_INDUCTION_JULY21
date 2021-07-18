@@ -1,0 +1,208 @@
+What is promise
+__________________
+used to avoide callback while called rest application using ajax
+
+
+What is promise
+Why we need it 
+Example of simple Promise 
+what is finally keyword
+Exception handling with promise
+Promise Channing
+Error handling with promises
+Promise.all
+promise.allsettled
+promise.race
+
+
+
+consider what will be the op?
+_________________________
+
+app.js
+________
+let data=1;
+console.log("first"+ data);
+data=2;
+setTimeout(() => {
+    console.log("mid"+ data);
+}, 2000);
+data=3;
+console.log("last"+data);
+
+
+
+<body>
+    <script src='/app.js'></script>
+</body>
+
+	As js run in single thread it will not wait for setTimeout and op will be
+	1
+	3
+	3
+
+
+Promise can be created or it many be readmade
+
+how to create promise?
+______________________
+console.log('hello')
+
+let data=new Promise((resolve, reject)=>{
+    setTimeout(() => {
+            resolve({name:"raj"})
+    }, 2000);
+})
+data.then((item)=>{
+    console.log(item);
+})
+console.log('bye')
+
+
+What if some error?
+___________________
+console.log('hello')
+let data=new Promise((resolve, reject)=>{
+    setTimeout(() => {
+            reject("some error")
+    }, 2000);
+})
+data.then((item)=>{
+    console.log(item);
+}).catch((err)=>{
+    console.log("error")
+})
+console.log('bye')
+
+
+finally:
+________
+let data=new Promise((resolve, reject)=>{
+    setTimeout(() => {
+            resolve("some work done")
+    }, 2000);
+})
+data.finally((item)=>{
+    console.log(item+"done");
+})
+
+
+handing errors:
+______________
+let data=new Promise((resolve, reject)=>{
+    setTimeout(() => {
+            reject(new Error())
+    }, 2000);
+})
+
+data.then((item)=>{
+    console.log(item)
+}).catch((err)=>{
+    console.log(err)
+})
+
+
+
+
+fetch() funcation is readymade function that provide an promise:
+_______________________________________________________________
+let data = fetch('http://localhost:9000/bookapp/book')
+
+data.then((item) => {
+    return item.json();
+}).then((result) => {
+    console.log(result);
+})
+
+
+
+
+
+promise.all
+______________
+when multiple promise working togather
+if one promise fail, all chain fails, it will not tell which fails
+
+let data=Promise.all([new Promise((resolve, reject)=>{
+    setTimeout(() => {
+        resolve("2sec promise 1")
+    }, 2000);
+}),
+new Promise((resolve, reject)=>{
+    setTimeout(() => {
+        reject("4sec promise 2")
+    }, 4000);
+}),
+new Promise((resolve, reject)=>{
+    setTimeout(() => {
+        resolve("3sec promise 3")
+    }, 3000);
+})])
+
+data.then((item)=>{
+    console.log("then block");
+}).catch((err)=>{
+    console.log("err")
+})
+
+
+promise.allsettled
+___________________
+when multiple promise working togather
+if one promise fail, chain continue
+it will also suggest which promise fails
+
+
+let data=Promise.allSettled([
+    new Promise((resolve, reject)=>{
+    setTimeout(() => {
+        resolve("2sec promise 1")
+    }, 2000);
+}),
+new Promise((resolve, reject)=>{
+    setTimeout(() => {
+        resolve("4sec promise 2")
+    }, 4000);
+}),
+new Promise((resolve, reject)=>{
+    setTimeout(() => {
+        resolve("3sec promise 3")
+    }, 3000);
+})])
+
+data.then((item)=>{
+    console.log("then block");
+}).catch((err)=>{
+    console.log("err")
+})
+
+
+promise.race
+______________
+when multiple promise working togather
+if as soon as one promise done, it will execute and ignore others promises
+
+
+let data=Promise.race([
+    new Promise((resolve, reject)=>{
+    setTimeout(() => {
+        resolve("2sec promise 1")
+    }, 2000);
+}),
+new Promise((resolve, reject)=>{
+    setTimeout(() => {
+        resolve("4sec promise 2")
+    }, 4000);
+}),
+new Promise((resolve, reject)=>{
+    setTimeout(() => {
+        resolve("3sec promise 3")
+    }, 3000);
+})])
+
+data.then((item)=>{
+    console.log("then block");
+}).catch((err)=>{
+    console.log("err")
+})
+

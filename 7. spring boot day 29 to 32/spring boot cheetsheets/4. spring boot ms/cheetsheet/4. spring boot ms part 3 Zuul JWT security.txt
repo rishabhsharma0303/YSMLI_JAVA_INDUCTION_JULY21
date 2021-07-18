@@ -1,0 +1,351 @@
+list of endpoints:
+_____________________
+http://localhost:8082/productapp/product/1
+
+
+http://localhost:8085/couponapp/couponbycode/SUP20
+
+http://localhost:8081/custmerapp/customer/1
+
+http://localhost:8080/orderapp/order
+
+{
+"cid":1,
+"pid":1,
+"quantity":4,
+"couponCode":"SUP20"
+}
+
+
+
+with Zuul:
+http://localhost:8100/product/productapp/product/1
+
+http://localhost:8100/coupon/couponapp/couponbycode/SUP20
+
+
+
+Api gateway and jwt security:
+______________________________
+
+@EnableZuulProxy
+@SpringBootApplication
+public class ApiGatewayApplication implements CommandLineRunner {
+
+}
+
+application.yml
+
+server:
+  port: 8100
+spring:
+  application:
+    name: api-gateway
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+zuul:
+  routes:
+    customer-service:
+      path: /customer/**
+      service-id: customer-service
+      strip-prefix: true
+    product-service:
+      path: /product/**
+      service-id: product-service
+      strip-prefix: true
+    coupon-service:
+      path: /coupon/**
+      service-id: coupon-service
+      strip-prefix: true
+    order-service:
+      path: /order/**
+      service-id: order-service
+      strip-prefix: true  
+management: 
+  endpoints: 
+    web: 
+      exposure: 
+        include: '*'
+
+
+JWT security configuration steps:
+______________________________
+1. dao layer
+
+@Data
+@NoArgsConstructor
+@Entity
+@Table(name = "user_table")
+public class User {
+	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int id;
+	private String username;
+	private String password;
+	private String email;
+}
+
+@Repository
+public interface UserDao extends JpaRepository<User, Integer>{
+	public User findByUsernameAndPassword(String username, String password);
+}
+
+
+2. service layer:
+________________
+public interface AuthenticationService {
+	public boolean verifyUser(String username, String password);
+	public void addUser(User user);
+	public String generateToken(String username);
+}
+
+
+
+@Service
+@Transactional
+public class AuthenticationServiceImpl implements AuthenticationService {
+
+	@Autowired
+	private UserDao userDao;
+
+	@Override
+	public boolean verifyUser(String username, String password) {
+		User user = userDao.findByUsernameAndPassword(username, password);
+		if (user != null)
+			return true;
+		else
+			return false;
+	}
+
+	@Override
+	public String generateToken(String username) {
+		return Jwts.builder().setSubject(username).setIssuedAt(new Date())
+				.setExpiration(new Date(System.currentTimeMillis()+50000))
+				.signWith(SignatureAlgorithm.HS256, "ustdemo")
+				.compact();
+	}
+
+	@Override
+	public void addUser(User user) {
+		userDao.save(user);
+	}
+
+}
+
+
+3. controller
+________________
+
+@RestController
+public class AuthController {
+
+	@Autowired
+	private AuthenticationService authService;
+
+	@GetMapping("/auth")
+	public String homeHander() {
+		return "welcome to auth server";
+	}
+
+	@PostMapping("/login")
+	public ResponseEntity<?> loginHander(@RequestBody LoginRequest loginRequest) {
+		System.out.println(loginRequest);
+		boolean isValid = authService.verifyUser(loginRequest.getUsername(), loginRequest.getPassword());
+
+		Map<String, String> responseMap = new HashMap<>();
+		String token = null;
+		if (isValid) {
+			token = authService.generateToken(loginRequest.getUsername());
+			responseMap.put("token", token);
+			responseMap.put("message", "login successfull");
+			return ResponseEntity.ok(responseMap);
+		} else {
+			responseMap.clear();
+			responseMap.put("token", null);
+			responseMap.put("message", "invalid");
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(responseMap);
+		}
+
+	}
+}
+
+
+Configiure jwt filter :
+____________________
+@EnableZuulProxy
+@SpringBootApplication
+public class ApiGatewayApplication implements CommandLineRunner {
+
+	......
+
+	@Bean
+	public FilterRegistrationBean filterRegistrationBean(){
+		FilterRegistrationBean bean=new FilterRegistrationBean();
+		bean.setFilter(new JwtFilter());
+		bean.addUrlPatterns("/auth/*");
+		return bean;
+	}
+}
+
+
+JwtFilter
+__________
+@Service
+public class JwtFilter implements Filter {
+
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+			throws IOException, ServletException {
+		HttpServletRequest req = (HttpServletRequest) request;
+		HttpServletResponse resp = (HttpServletResponse) response;
+
+		String authHeader = req.getHeader("Authorization");
+		// pre flight header
+		if (req.getMethod().equals("OPTIONS")) {
+			resp.setStatus(resp.SC_OK);
+			chain.doFilter(request, response);
+		} else {
+			if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+				resp.sendError(403);
+				return ;
+			}
+			System.out.println(authHeader);
+			
+			String token = authHeader.split(" ")[1];
+			System.out.println(token);
+
+			try {
+				Claims claims = Jwts.parser().
+						setSigningKey("ustdemo")
+						.parseClaimsJws(token).getBody();
+				System.out.println(claims.getSubject());
+				request.setAttribute("claims", claims);
+				chain.doFilter(request, response);
+			} catch (Exception ex) {
+				resp.sendError(403);
+			}
+		}
+	}
+
+}
+
+
+Dependencies
+_____________
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.3.10.RELEASE</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.demo</groupId>
+	<artifactId>api-gateway</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>api-gateway</name>
+	<description>Demo project for Spring Boot</description>
+	<properties>
+		<java.version>11</java.version>
+		<spring-cloud.version>Hoxton.SR11</spring-cloud.version>
+	</properties>
+	<dependencies>
+		<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-security</artifactId> 
+			</dependency> -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-zuul</artifactId>
+			<version>1.4.7.RELEASE</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-jwt</artifactId>
+			<version>1.1.0.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+	</dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+

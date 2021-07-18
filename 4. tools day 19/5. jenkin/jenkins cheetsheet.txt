@@ -1,0 +1,315 @@
+jenkins tutorial:
+-----------------
+run jenkins jar, changing port
+-----------------------------
+java -jar jenkins.war --httpPort=8090
+
+1. login
+2. install plugins
+3. change admin password
+
+
+
+
+https://www.blazemeter.com/blog/how-to-install-jenkins-with-a-war-file
+
+
+
+hello world jenkins job:
+-------------------------
+	login --> create first job-->
+
+
+public class Hello{
+	public static void main(String args[]){
+		System.out.println("hello to jenkins");
+	}
+}
+
+
+cd /home/raj/hello2
+javac Hello.java
+java Hello
+
+
+
+https://github.com/rgupta00/mvc.git
+
+https://github.com/rgupta00/mvc
+
+
+spring mvc maven github project :
+------------------------------
+step 1: create spring mvc maven hello world
+step 2: put project on github
+
+step 3: create an new jenkins project
+
+springmvc ----->freestyle ---> give description
+				(spring MVC hello world)
+
+					|
+				choose : github project ..provide link
+
+
+				choose : SCM--> git
+				provide Credentials ( create jenkins/admin)
+
+					|
+				Build trigger --> poll scm: * * * * *
+
+					|
+				Build Environment: Delete workspace before build starts
+
+					|
+
+				Choose build goals: clean compile test package
+
+
+
+
+Tomcat Server Setup For Jenkins Deployment :
+--------------------------------------------
+
+step 1: donwload install tomcat zip
+step 2: provide new user in tomcat-user.xml
+
+<role rolename="manager-gui"/>
+<role rolename="manager-script"/>
+<user username="admin" password="admin" roles="manager-gui,manager-script"/>
+
+
+step 3: now we need to add tomcat plugin for jenkins
+
+	click Manage Jenkins---> manage plugins--->search for  container
+
+								|
+							Deploy to container (name of container)
+								|
+						Installing Plugins/Upgrades
+	Now restart jenkins
+
+
+
+step 4: now from previous project
+
+choose last option:
+
+Post-build Actions
+
+	mention war file location: target/mvc.war
+
+	configure  Credentials	
+
+	admin/****** (tomcat.admin)
+ 
+ 	and tomcat url
+
+
+
+Jenkins pipeline:
+----------------
+	DEV_JOB,QA_JOB UAT_JOB
+
+	step 1:
+	install build pipeline plugin
+
+
+	click Manage Jenkins---> manage plugins--->search for  Build Pipeline
+
+								|
+						Installing Plugins/Upgrades
+	Now restart jenkins
+
+
+
+	step 2: create new project : qa-job
+
+	project Build Triggers
+	Trigger builds remotely (e.g., from scripts)	
+	Build after other projects are built	
+ 		Projects to watch: dev-job
+		Trigger only if build is stable
+
+
+
+
+jenkins declerative pipeline:
+---------------------------
+
+https://www.jenkins.io/blog/2017/02/07/declarative-maven-project/
+
+
+	demo-pipeline--> declarative pipeline
+
+	Hello world Jenkins Declarative Pipeline:
+
+	pipeline {
+    agent any
+
+    stages {
+        stage('Hello') {
+            steps {
+                echo 'Hello World'
+            }
+        }
+    }
+}
+
+
+Example 2: pipeline hello world with git:
+-------------------------------------
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Git checkout') {
+            steps {
+                git 'https://github.com/rgupta00/mvc.git'
+            }
+        }
+    }
+}
+
+	
+
+Example :
+----------
+
+
+pipeline {
+    agent any
+
+   environment{
+       	 PATH = "/opt/maven3/bin:$PATH"
+    }
+
+    stages {
+        stage('stage1') {
+            steps {
+                git credentialsId: 'git.admin', url: 'https://github.com/rgupta00/mvc.git'
+            }
+
+        }
+ 
+	stage('stage2') {
+            steps {
+                sh "mvn -Dmaven.test.failure.ignore=true clean package"  
+            }
+
+            post {
+                
+                success {
+                    archiveArtifacts 'target/*.war'
+                }
+            }
+        }
+    }
+}
+
+
+
+
+pipeline {
+    agent any
+
+   environment{
+       	 PATH = "/opt/maven3/bin:$PATH"
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                // Get some code from a GitHub repository
+                git 'https://github.com/rgupta00/mvc.git'
+
+                sh "mvn -Dmaven.test.failure.ignore=true clean package"
+            }
+
+            post {
+                // If Maven was able to run the tests, even if some of the test
+                // failed, record the test results and archive the jar file.
+                success {
+                    junit '**/target/surefire-reports/TEST-*.xml'
+                    archiveArtifacts 'target/*.war'
+                }
+            }
+        }
+    }
+}
+
+
+
+
+Example:
+
+
+
+	pipeline {
+	    agent any
+	
+	environment{
+       	 PATH = "/opt/maven3/bin:$PATH"
+    	}
+	    stages {
+		stage ('Compile Stage') {
+
+		    steps {
+		            sh 'mvn clean compile'
+		        
+		    }
+		}
+
+		stage ('Testing Stage') {
+		            sh 'mvn test'
+		        
+		    }
+		}
+
+
+		stage ('Deployment Stage') {
+		    steps {
+		            sh 'mvn deploy'
+		    }
+		}
+	    }
+	}
+
+
+
+
+
+
+Jenkinsfile
+
+Example:
+--------
+pipeline{
+    agent any
+    
+    environment{
+        PATH = "/opt/maven3/bin:$PATH"
+    }
+    stages{
+        stage("Git Checkout"){
+            steps{
+                git credentialsId: 'github', url: 'https://github.com/rgupta00/mvc'
+            }
+        }
+        stage("Maven Build"){
+            steps{
+                sh "mvn clean package"
+                sh "mv target/*.war target/mvc.war"
+            }
+        }
+       
+        }
+    }
+}
+
+
+
+
+
+

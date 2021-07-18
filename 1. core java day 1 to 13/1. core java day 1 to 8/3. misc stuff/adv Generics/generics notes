@@ -1,0 +1,225 @@
+Java Generic:
+------------
+
+
+What problem generics is trying to solve?
+----------------------------------------
+Let we required to create a Glass class to hold juice?
+
+public class Glass {
+	private Juice juice;
+	private Water water;
+	//...	
+}
+=> not a flexible design ....
+
+What about this:
+-------------
+public class Glass {
+	private Object liquid;
+
+	public Object getLiquid() {
+		return liquid;
+	}
+
+	public void setLiquid(Object liquid) {
+		this.liquid = liquid;
+	}
+}
+
+	looks ok: but need to typecast it whenever i need to grab juice or water....
+	As we have used very generic object in Glass class and we have to typecast it
+	
+
+	Glass glass=new Glass();
+	Juice juice=new Juice();
+	glass.setLiquid(juice);
+	Juice juice2=(Juice) glass.getLiquid();
+	
+
+Solution 1:
+--------------
+public class Glass <T> {
+	private T liquid;
+
+	public T getLiquid() {
+		return liquid;
+	}
+
+	public void setLiquid(T liquid) {
+		this.liquid = liquid;
+	}
+}
+
+
+	Glass<Juice> glass=new Glass<>();
+	Juice juice=new Juice();
+	glass.setLiquid(juice);
+	Juice juice2=glass.getLiquid();	
+		
+	Glass<Water>glass2=new Glass<Water>();
+		
+	glass2.setLiquid(new Water());
+	Water water2=glass2.getLiquid();
+	
+	//Now what to do?
+	//Looks very stupid
+	Glass<Integer>glass3=new Glass<Integer>();
+		
+
+Generic syntax:
+---------------
+
+	Generic syntax:
+	-------------
+	class Glass <T>{
+		private T liquid;
+	}
+
+	Where T: type parameter
+		*Single char
+		* Capital
+		* in angle brackets
+
+	Common char used in java api:
+	----------------------------
+	K	-Key
+	E	-Element
+	N	-Number
+	T	-Type
+	V	-Value
+	S,U,V	-Mulitple types
+
+	interface Liquid{}
+
+	Glass<Cake> cakeGlass=new Glass<Cake>();
+
+
+
+	Mulitple type parameters:
+	------------------------
+	public class Colour<R,G,B> {
+		public Colour(){ }
+		public Colour(R red, G green, B blue){
+		}
+	}
+
+	class Red { }
+	class Green{ }
+	class Blue{ }
+
+	Red red = new Red();
+	Green green = new Green();
+	Blue blue = new Blue();
+
+	Colour<Red, Green, Blue> colour = new Colour< >(red, green, blue);
+	Colour<Red, Green, Blue> colour = new Colour< >( );
+
+
+
+	Generic Methods
+	---------------
+	public class Bartender{
+
+	//Method with return type
+	public <J,W> Cocktail mix(J juice, W water){
+		//Cocktail mixing code ;-)
+		return new Cocktail( );
+	}
+
+	public <J,W> void mix2(J juice, W water){}
+	public static <J,W> void mix3(J juice, W water){}
+	}
+
+Generics Method - Invocation
+----------------------------
+	=> No need to declare at class level to use at method level
+	=> For variables – Declare at class level
+
+	Bartender bartender = new Bartender();
+	Juice juice = new Juice();
+	Water water = new Water();
+	Glass<Cocktail> cocktail = bartender.<Juice, Water>mix(juice, water);
+	bartender.mix(juice, water); // Works – Type Inference
+	Bartender.<Juice, Water>mix3(juice, water); //Static method
+
+
+
+Bounded Type Parameters
+------------------------
+	=> any thing even integer can be put in glass in above examples:
+
+	Bounded type parameter:
+	----------------------
+	class Glass <T extends Liquid>{
+		private T liquid;
+	}
+
+	Note: extends keyword for both class and interface....
+
+
+	Examples:
+	interface Liquid { }
+	class Juice implements Liquid{ }
+	class Water implements Liquid{ }
+	class Cake { }
+	class Diesel{ }
+
+	Glass<Juice> juiceGlass = new Glass<Juice>( );   //compile
+	Glass<Water> waterGlass = new Glass<Water>( );	 //compile
+	Glass<Cake> cakeGlass = new Glass<Cake>( ); 	// not compile
+	Glass<Diesel> dieselGlass = new Glass<Diesel>( );  //not compile
+
+
+	Final Code:
+	---------
+	public class Glass <T extends Liquid> {
+		private T liquid;
+
+		public T getLiquid() {
+			return liquid;
+		}
+		public void setLiquid(T liquid) {
+			this.liquid = liquid;
+		}
+	}
+
+
+	public class Juice implements Liquid{}
+	public class Water implements Liquid{}
+	public interface Liquid {}
+
+
+	NOW COMPILER SLAP AS SOON AS I DO WRONG:
+	-----------------------------------------
+		Glass<Juice> glass=new Glass<>();
+		Juice juice=new Juice();
+		glass.setLiquid(juice);
+		Juice juice2=glass.getLiquid();
+		
+		
+		Glass<Water>glass2=new Glass<Water>();
+		
+		glass2.setLiquid(new Water());
+		Water water2=glass2.getLiquid();
+		
+		//Now what to do?
+		//Looks very stupid
+		Glass<Integer>glass3=new Glass<Integer>();//xxxxxxX
+
+
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
+

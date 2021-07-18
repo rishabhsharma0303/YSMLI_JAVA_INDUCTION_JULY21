@@ -1,0 +1,1280 @@
+Typescript tutorial
+===================
+
+	What is typescript?
+	-------------------
+	=> TypeScript is an open-source programming language developed and maintained by Microsoft
+	
+	=>  As TypeScript is a superset of JavaScript, existing JavaScript programs are also valid 				TypeScript programs. 
+
+	=> TypeScript may be used to develop JavaScript applications for both
+		 client-side and server-side (Node.js) execution
+
+	Why typescript?
+	------------
+	=> adds optional static typing to the language
+
+	=>  TypeScript is designed for development of large applications 
+		and transcompiles to JavaScript
+
+	=> TypeScript makes code easier to read and understand. 
+
+	=> huge improvement over plain JavaScript. 
+
+	=> TypeScript gives us all the benefits of ES6 (ECMAScript 6), plus more productivity.
+
+
+	Advantage:
+	======
+	=> easy code management
+	=> Support ecma script
+	=> oo wrapper looks like java, c#
+	=> ide support
+
+
+
+
+gettting started
+==================
+
+installation: npm install -g typescript
+
+tsc demo.ts --watch
+
+
+tsc ex.ts --outDir js
+
+run tsc command to check version
+
+
+greet.ts
+-----------
+function greet(person:string) {
+    return "Hello, " + person;
+}
+
+let user = "rajeev gupta";
+
+greet(user);
+
+
+converting to js: tsc greet.ts
+
+
+it error to do:
+let user=11;
+
+
+
+
+
+
+ts class demo:
+==============
+class App{
+    test(){
+        console.log(`hello to ts`);
+    }
+}
+
+let a=new App();
+a.test();
+
+
+
+
+
+Typescript datatypes/Variable decleration
+----------------------------------------
+
+boolean
+let isJobDone:boolean = false;
+//Number
+let myNum:number = 4;
+
+//text string
+
+let myName:string = "raj";
+
+//template strings
+let greeting : strign ="hello,"+myName;
+
+let greeting : strign =`hello ${myName}';
+
+
+//arrays
+let count : Array<number> = [1,2,3,4];
+
+
+// if you dont know the type
+ let anything : any = 4;
+ anything ="some text";
+
+ anything = false;
+
+//return nothing
+
+ function greet(name: string) : void {
+	console.log(`hello ${name}`);
+ }
+
+//enums
+ let joyStStatus  1;
+ enum Directions{UP, DOWN, LEFT, RIGHT};
+  if(joyStStatus ===1){
+
+  }
+
+  if(joyStStatus ===Directions.UP){
+
+  }
+ enum Color{RED, BLUE, GREEN};
+ 
+ IF(Color === 1){
+
+ }
+
+Note typescript array:
+=======================
+
+When we declare the array:
+
+let data=['hello','bye'];
+
+and then add 66(number ts gives error)
+
+data[1]=66;
+
+in below case ts dont give error:
+-------------------------
+let data=['hello','bye',55];
+data[1]=66;
+
+
+
+
+
+typescript union type:
+=====================
+let data: string | number="raja"
+
+
+
+
+
+Interface in typescript:
+-----------------------
+	=>  interface is a syntactical contract that an entity should conform to
+	
+	=> Interfaces define properties, methods, and events, which are the members of the interface. 
+
+	=> Interfaces contain only the declaration of the members. It is the responsibility of the 			deriving class to define the members. 
+
+	=> It often helps in providing a standard structure that the deriving classes would follow.
+
+
+interface Person {
+    firstName: string;
+    lastName: string;
+}
+
+
+
+
+function hello(person: Person) {
+    return "Hello, " + person.firstName + " " + person.lastName;
+}
+
+let user = { firstName: "raj", lastName: "gupta" };
+
+Ex2:
+-----
+
+interface IPerson { 
+   firstName:string, 
+   lastName:string, 
+   sayHi: ()=>string 
+} 
+
+var customer:IPerson = { 
+   firstName:"ravi",
+   lastName:"kumar", 
+   sayHi: ():string =>{return "Hi there"} 
+} 
+
+console.log("Customer Object ") 
+console.log(customer.firstName) 
+console.log(customer.lastName) 
+console.log(customer.sayHi())  
+
+var employee:IPerson = { 
+   firstName:"ekta",
+   lastName:"gupta", 
+   sayHi: ():string =>{return "Hello!!!"} 
+} 
+  
+console.log("Employee  Object ") 
+console.log(employee.firstName);
+console.log(employee.lastName);
+
+
+
+
+Interfaces and Inheritance
+------------------------
+
+	=> an interface can inherit from other interface. 
+
+	=> Typescript allows an interface to inherit from multiple interfaces.
+
+
+
+interface Person { 
+   age:number 
+} 
+
+interface Musician extends Person { 
+   instrument:string 
+} 
+
+var drummer = <Musician>{}; 
+drummer.age = 27 
+drummer.instrument = "Drums" 
+console.log("Age:  "+drummer.age) console.log("Instrument:  "+drummer.instrument)
+
+
+
+typescript classes:
+--------------------
+class Car { 
+   engine:string; 
+   
+   constructor(engine:string) { 
+      this.engine = engine 
+   }  
+   
+   disp():void { 
+      console.log("Function displays Engine is  :   "+this.engine) 
+   } 
+} 
+
+var obj = new Car("XXSY1")
+
+console.log("Reading attribute value Engine as :  "+obj.engine)  
+
+obj.disp()
+
+
+
+
+Typescript inheritacnce:
+-------------------------
+class Shape { 
+   Area:number 
+   
+   constructor(a:number) { 
+      this.Area = a 
+   } 
+} 
+
+class Circle extends Shape { 
+   disp():void { 
+      console.log("Area of the circle:  "+this.Area) 
+   } 
+}
+  
+var obj = new Circle(223); 
+obj.disp()
+
+
+
+
+TypeScript ─ Class inheritance and Method Overriding
+--------------------------------------------------
+
+class PrinterClass { 
+   doPrint():void {
+      console.log("doPrint() from Parent called…") 
+   } 
+} 
+
+class StringPrinter extends PrinterClass { 
+   doPrint():void { 
+      super.doPrint() 
+      console.log("doPrint() is printing a string…")
+   } 
+} 
+
+var obj = new StringPrinter() 
+obj.doPrint()
+
+
+
+TypeScript ─ static method
+----------------------------
+
+
+class StaticMem {  
+   static num:number; 
+   
+   static disp():void { 
+      console.log("The value of num is"+ StaticMem.num) 
+   } 
+} 
+
+StaticMem.num = 12     // initialize the static variable 
+StaticMem.disp()      // invoke the static method
+
+
+
+Configuration file in TypeScript
+==================================
+
+How to make it 
+	tsc --init
+
+create folders src and output
+	=> we want to put our src in src folder and output to output folder
+
+	    "outDir": "./output",               
+     	     "rootDir": "./src",    
+
+
+
+What we can config
+Try out with  some configuration
+
+
+TypeScript ─ namespace
+--------------------
+	namespace in TypeScript
+        what is namespace 
+        How to use it 
+         Example for namespace
+
+	Need of namespace?
+
+
+Hello world namespace:
+----------------------
+
+namespace UserUtil{
+  export   class User{
+        getname(): string{
+            return "hello to userutil";
+        }
+    }
+}
+
+let u=new UserUtil.User();
+console.log(u.getname());
+
+
+
+
+
+
+
+
+
+TypeScript ─ module
+--------------------
+	=> A module is designed with the idea to organize code written in TypeScript
+
+Ex:
+
+
+cal.ts
+
+export function add(a : number, b : number) : number {
+    return a+ b ;
+}
+
+or :
+
+
+ function add(a : number, b : number) : number {
+    return a+ b ;
+}
+
+export{ add as sum };
+
+
+or :
+export function add(a : number, b : number) : number {
+    return a+ b ;
+}
+
+
+ function substract(a : number, b : number) : number {
+    return a - b ;
+}
+
+export {add, substract};
+
+
+
+cal_client.ts
+
+import {add} from "./cal"
+console.log(add(2,4));
+
+
+or:
+
+import {sum as total} from "./cal"
+console.log(add(2,4));
+
+
+or:
+
+import {sum , substract } from "./cal"
+console.log(add(2,4));
+
+
+import * as Calc from "./cal"
+console.log(Calc.add(2,4));
+
+
+importing as well as export:
+-----------------------
+import {add} from "./cal"
+console.log(add(2,4));
+export { add}
+
+----------------------------------
+ES 6 and typescript new enhancements
+-----------------------------------
+1. var hoisting and function scope
+2. const in ES 6
+3. Arrow function, functional programming in js
+4. Default value to function arguments
+5. Rest operation in ES 6 ( aka variable arguemnt methods of java)
+6. Spread operator in es 6
+7.Spread operator with object literals
+8. Destructuring arrary
+9. Destructuring objects
+10. String templetes
+11. for of loop: used with iterables
+12. Es6 classes
+	-3 type of functions in a class
+	- class inheritance
+
+What is typescript?
+------------------
+	=> super set of js
+	=> oo wrapper on js
+
+installation: npm install -g typescript
+
+run tsc command
+
+
+1. var hoisting and function scope:
+===================================
+
+what is the op of function when called? error
+-----------------------------------
+
+function greetPerson(name){
+    if (name==="rajeev"){
+        var greet="hello programmer";
+    }else{
+        var greet="hello person";
+    }
+
+    console.log(greet);
+}
+
+=> var is declared two time! its ok in js
+=> value of var is overriden second time
+
+
+function greetPerson(name){
+    if (name==="rajeev"){
+         greet="hello programmer";
+    }else{
+         greet="hello person";
+    }
+     var greet;
+    console.log(greet);
+}
+
+=> In this case js put var greet on the top of method defination (var hoisting )
+=> scope of var is function scope ( not the block scope!)
+=> var decleration is bit tricky ==> js introduce let and const
+
+
+
+let and const
+-------------
+
+function greetPerson(name){
+    if (name==="rajeev"){
+        let greet="hello programmer";
+    }else{
+        let greet="hello person";
+    }
+
+    console.log(greet);
+}
+
+Uncaught ReferenceError: greet is not defined
+    at greetPerson (main5.js:8)
+    at <anonymous>:1:1
+
+
+
+Solution:
+function greetPerson(name){
+    let greet;
+   
+    if (name==="rajeev"){
+         greet="hello programmer";
+    }else{
+         greet="hello person";
+    }
+
+    console.log(greet);
+}
+
+
+What about below code?
+------------------------
+function greetPerson(name){
+
+    if (name==="rajeev"){
+         greet="hello programmer";
+    }else{
+         greet="hello person";
+    }
+
+    console.log(greet);
+
+    let greet;
+}
+
+=> dont compile , no hoisting with let!
+
+
+let vs var scope:
+====================
+What is the op?
+
+var a=1;
+var b=10;
+if(a==1){
+    var a=10;
+    let b=20;
+    console.log(a);
+    console.log(b);
+}
+console.log(a);
+console.log(b);
+
+
+
+	=> let is blocked scope ( as it happens in c/c++/java)
+	=> var is function scope
+
+
+
+redecleration of var vs let
+---------------------------
+
+ var a=1;
+ var a=10;	works
+
+ let a=1;
+ let a=10;  gives error
+
+
+
+
+ var vs let in a loop
+-------------------
+
+for(var i=0; i<10;i++){
+    console.log(i);
+}
+
+console.log("====="+i);
+
+ => what if we replace var with let
+
+
+
+2. const in ES 6
+==================
+	=> same as const in c++, final in java
+
+	
+ Ex:
+let num=1;
+const num2=10;
+
+num2=33;
+
+	=> TypeError: Assignment to constant variable.
+
+
+
+const obj1={
+    name:"raj"
+}
+obj1={
+    name:"ravi"
+}
+
+
+	=> TypeError: Assignment to constant variable.
+
+
+const obj1={
+    name:"raj"
+}
+obj1.name="rajeev";
+
+	=> u can change the value inside obj1
+
+
+
+
+3. Arrow function, functional programming in js
+======================================
+
+	=> arrow function support functional programming in js
+	=> short hand notation
+
+Ex:
+
+var a=function(){
+    return 10;
+}
+
+var b=()=>10;
+const adder=(a, b)=> a+b;
+
+
+console.log(b);
+
+
+normal function vs arrow function difference: laxical scope:
+-------------------------------------------------------------
+	=> every function in js has its own scope while arrow function take scope of 
+		function in which it runs
+
+Ex:
+
+var emp={
+    id:1,
+    greet: function(){
+        console.log(this.id);
+    }
+}
+
+
+	=> it print 1
+
+
+Now change it to...
+
+var emp={
+    id:1,
+    greet: function(){
+        setTimeout(function(){
+            console.log(this.id)
+        }, 1000);
+    }
+}
+emp.greet();
+
+emp.greet();
+
+ => We get undefine, as we are passing function console.log(this.id) in other function console.log(this.id)
+ => this.id is not defined in setTimeOut function scope
+ => var emp={
+    id:1,
+    greet: function(){
+        temp=this;
+        setTimeout(function(){
+            console.log(temp.id)
+        }, 1000);
+    }
+}
+emp.greet();
+
+ => we can solve this problem by using arrow function
+
+
+var emp={
+    id:1,
+    greet: function(){
+        temp=this;
+        setTimeout(()=>
+            console.log(temp.id)
+        , 1000);
+    }
+}
+emp.greet();
+
+
+
+
+
+4. Default value to function arguments
+=======================================
+let getValue=function(a){
+    console.log(a);
+}
+
+let getValue=function(a=10){
+    console.log(a);
+}
+
+
+let getValue=function(a=10, b=4){
+    console.log(a);
+}
+
+
+getValue(undefined, 12);
+
+
+
+
+
+5. Rest operator in ES 6 ( aka variable arguemnt methods of java)
+==================================================================
+
+let displayColor=function(){
+    console.log(message);
+    for(let i in arguments){
+        console.log(arguments[i]);
+    }
+}
+
+let message="list of color";
+
+displayColor(message, "red","black","blue");
+
+	=> confusion for java developers
+
+	=> ES 6 introduce rest operator
+	
+	=>  ...colors are rest parameters
+
+
+
+let displayColors = function(message, ...colors){
+
+     console.log(message);
+     console.log(colors);
+     
+     
+    for(let i in colors){
+        console.log(colors[i]);
+        
+    }
+}
+
+let message = "List of Colors"
+
+displayColors(message, 'Red');
+displayColors(message, 'Red','Blue');
+displayColors(message, 'Red','Blue','Green');
+
+
+
+
+6. Spread operator in es 6
+=================================
+	=> take an arry and split in individual elements
+	=> What if we try to pass
+
+	
+	let colorArray = ['Orange','Yellow','Indigo'];
+	displayColors(message,colorArray)
+
+	=> it dont work
+	=> ES 6 introduce spread operator
+
+	
+	let colorArray = ['Orange','Yellow','Indigo'];
+	displayColors(message, ...colorArray)
+
+
+
+
+
+7.Spread operator with object literals
+===========================================
+
+	=> let consider
+
+let firstname = "rajeev";
+let lastname = "gupta";
+
+//object literal
+let person = {
+    firstname:firstname,
+    lastname:lastname
+};
+
+console.log(person.firstname);
+console.log(person.lastname);
+
+
+=> ES 6 introduce easy way to represent object liternal
+=> if the property name is same as variable name, we dont need to mention in object literal
+
+let person = {
+    firstname,
+    lastname
+};
+
+
+console.log(person.firstname);
+console.log(person.lastname);
+
+
+=> Same happends when we retrun value from a function
+---------------------------------------------------
+
+function createPerson(firstname, lastname, age){
+    let fullname = firstname + " " + lastname;
+    return {firstname,lastname,  fullname}
+}
+
+let p = createPerson("rajeev","gupta", 62);
+console.log(p.firstname);
+console.log(p.lastname);
+console.log(p.fullname);
+
+
+=> shorthand notation in case of function we can ommit function keyword and :
+-----------------------------------------------------------------------------
+
+function createPerson(firstname, lastname, age){
+    let fullname = firstname + " " + lastname;
+    return {
+        firstname,
+        lastname, 
+        fullname,
+	//isSenior:function()
+        isSenior{
+            return age>60;
+        }}
+}
+
+let p = createPerson("rajeev","gupta", 62);
+console.log(p.firstname);
+console.log(p.lastname);
+console.log(p.fullname);
+console.log(p.isSenior());
+
+
+
+
+8. Destructuring arrary
+=====================
+	=> ie pulled apart elements of an arrray
+
+let employee = ["rajeev", "gutpa", "Male"];
+
+	//Destructuring arrary
+
+let [fname, lname, gender] = employee;
+
+console.log(fname);
+console.log(lname);
+console.log(gender);
+
+	=> What if gender is not present?
+
+	let [fname, lname, gender="Male"] = employee;
+
+
+	=> What if we want to skip fname and lname
+	
+let [, , gender] = employee;	// will only accept gender
+
+
+let [fname, ...elements] = employee; //will hold rest elements in an array
+
+
+
+
+
+9. Destructuring objects
+=====================
+
+let employee = {
+    fname: "rajeev",
+    lname: "gupta",
+    gender: "Male"
+};
+
+let {fname, lname, gender} = employee;
+
+console.log(fname);
+console.log(lname);
+console.log(gender);
+
+
+/* With Alias
+let {fname: f, lname: l, gender: g} = employee;
+
+console.log(f);
+console.log(l);
+console.log(g);
+
+
+
+10. String templetes
+==================
+
+let user = "rajeev";
+
+let greet = `Welcome 'single' "double" ${user} to ES2015
+            This is the second line.
+               Third and so          on.
+
+`;
+
+console.log(greet);
+
+
+
+
+11. for of loop: used with iterables
+================================
+
+let colors = ['Red', 'Blue', 'Green'];
+
+for(let index in colors){
+    console.log(colors[index]);
+    
+}
+
+
+//better code
+for(let color of colors){
+    console.log(color);
+    
+}
+
+
+//with strings
+let letters = "ABC";
+
+for(let letter of letters){
+    console.log(letter);
+    
+}
+
+
+
+12. Es6 classes
+==============
+
+class Person{
+    greet(){}
+}
+let p = new Person();
+
+console.log(p.greet === Person.prototype.greet);
+
+ => Under the hood classes of ES 6 are functions
+ => not hoisted ie
+ => javscript classes are only sntex suger to existing prototype based inheritance
+
+	What if i write:
+
+	employee(); //calling function before defination, js do hoisted and op is undefined!
+
+	function employee(){}
+
+ 	=> let we do same with classes ( gives error GOOD)
+
+	let p1=Employee(); //calling function before defination, js do hoisted and op is undefined!
+
+	class  employee(){}
+	
+
+
+3 type of functions in a class
+======================
+
+class Person{
+	//construct 1 per class, called when creating object
+   constructor(name){
+       this.name = name;
+       console.log(this.name + " Constructor");
+       
+   }
+
+   //static method, called with name of class
+   static staticMethod(){
+       console.log("Static Method");
+       
+   }
+
+   //prototype method
+   greetPerson(){
+       console.log("Hello " + this.name);
+       
+   }
+}
+let p = new Person("rajeev");
+Person.staticMethod();
+p.greetPerson();
+
+
+
+class inheritance
+=================
+class Person{
+    constructor(name){
+        console.log(name + " Person constructor");
+        
+    }
+    getID(){
+        return 10;
+    }
+}
+
+class Employee extends Person{
+    constructor(name){
+        super(name);
+        console.log(name + " Employee constructor");
+        
+    }
+	//overriding method from base class
+    getID(){
+        return super.getID();
+    }
+}
+
+let e = new Employee("Chandler");
+console.log(e.getID());
+
+
+	=> syntex suger, convet to prototype inheritance
+
+
+13. set and map in es 6
+==========================
+	=> no set and map in es5
+	=> very difficult to have set in es 5
+
+	Ex:
+let mySet=Object.create(null); // creating an object with null properties
+mySet.id=1;
+
+if(mySet.id){
+	console.log("id exisits");
+}else{
+	console.log("id dont exisits");
+}	
+
+op: "id exisits";
+
+
+but what in case of:
+------------------------
+mySet.id=0;
+
+if(mySet.id){
+	console.log("id exisits");
+}else{
+	console.log("id dont exisits");
+}
+
+op: "id exisits"; //confusion!
+
+
+How to define map in es 5?
+--------------------------
+
+let myMap = Object.create(null);
+myMap.name ="rajeev";
+let val = myMap.name;
+console.log(val);
+
+
+myMap[100] = "Hello";
+console.log(myMap["100"]); //both 100 and "100" treated same way! what if i need both?
+
+
+what in case of map of objects?
+------------------------------
+let ob1 = {};
+let ob2 = {};
+
+myMap[ob1] = "World";
+
+//print same value! why? as string representation of both ob1 and ob2 are same
+console.log(myMap[ob2]);
+console.log(myMap[ob1]);
+
+console.log(ob1.toString());
+console.log(ob2.toString());
+
+
+Defining set in es6
+=================
+ let mySet = new Set();
+ mySet.add(1);
+ mySet.add(1);
+
+ What is the size?
+ console.log(mySet.size); // op 1
+
+
+What is the size in case of objects?
+---------------------
+let ob1 = {};
+let ob2 = {};
+ console.log(mySet.size); //2, as two objects are unique
+
+
+
+ u can anything in set
+------------------------
+ mySet.add("Hello");
+ mySet.add(1);
+ mySet.add(ob1);
+ mySet.add(ob2);
+ console.log(mySet.size);
+
+console.log(newSet.delete(1));
+ console.log(newSet.size);
+
+
+
+ what if adding array?
+---------------------
+ let newSet = new Set([1,2,3,4,4,4]);
+ console.log(newSet.size);
+
+builder pattern
+----------------
+ let chainSet = new Set().add("hello").add("world");
+ console.log(chainSet.size);
+
+ 
+ 
+Map in es6
+===============
+
+	=> order list of k--> value, type of key is  string/object
+	=> decleration 
+
+	let myMap=new Map();
+	myMap.set("name","raj");
+	myMap.set("job","trainer");
+
+	console.log(myMap.get("name");
+
+	map with object as key:
+	--------------------
+	let myMap=new Map();
+	let obj1={};
+	let obj2={}:
+
+	myMap.set(obj1,10);
+	myMap.set(obj2,20);
+
+	console.log(myMap.get(ob1));
+
+
+	size of map:
+	-----------
+	console.log(myMap.size());
+
+	is map has a key?
+	---------------------
+	console.log(myMap.sizehas("name));
+
+	remove key-> value
+	-----------------
+	myMap.delete("name");
+	console.log(myMap.size());
+
+	clear all value from map
+	-----------------
+	myMap.clear();
+
+
+Using array to initilize map:
+------------------------
+let myMap = new Map([["name","rajeev"], ["job","trainer"]]);
+
+
+
+Iteration over map to print only keys:
+----------------------------------
+	for( let key of myMap.keys()){
+		console.log(key);
+	}
+
+Iteration over map to print only values:
+----------------------------------
+	for( let value of myMap.values()){
+		console.log(value);
+	}
+
+
+Iteration over map to print both key and values:
+----------------------------------
+	for( let entry of myMap.entries()){
+		console.log(`${entry[0]}--> ${entry[1]}`);
+	} 
+
+
+var numbers = [2,4,6,8];
+numbers.forEach(arrayFunction);
+function arrayFunction(element,index,array){
+  console.log("arr["+index+"]= "+element);
+};
+
+
+
+
+/*
+let myMap = new Map([["fname","Chandler"],
+                     ["lname","Bing"]]);
+myMap.forEach(mapFunction);
+function mapFunction(value,key,callingMap){
+  console.log(key+" "+value);
+  console.log(myMap === callingMap);
+}  
+*/
+
+
+
+
+/*
+let mySet = new Set([1,2,3]);
+mySet.forEach(setFunction);
+function setFunction(value,key,callingSet){
+  console.log(key+" "+value);
+  console.log(mySet === callingSet);
+}
+*/
+
+
+
+
+Weak map in es6
+================
+ let myMap = new WeakMap();
+let ob1 = {};
+myMap.set(ob1,"Hello World");
+console.log(myMap.get(ob1));
+ob1 = null;
+
+
+
+

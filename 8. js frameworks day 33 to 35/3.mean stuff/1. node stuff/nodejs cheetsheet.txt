@@ -1,0 +1,710 @@
+Node js Discussion:
+______________
+What is nodejs?
+________________
+Node.js is an open-source, cross-platform, 
+back-end JavaScript runtime environment that runs on the V8 
+engine and executes JavaScript code outside a web browser
+
+Nodejs use an event driven single threaded, non blocking io model 
+
+dev by Ryan dahl 2009 MIT lic
+
+provide cross plateform runtime env for js
+
+ligth weight and good for data intensive application that works real time 
+and accross sevral devices
+	
+Application:
+__________
+ web network applications
+ video streaming sites which are i/o intensive web app
+ SPA
+ JSON api based application
+
+
+Features of Node.js
+_________________
+Asynchronous event-driven IO helps concurrent request handling
+
+hello world:
+______________
+
+node first.js
+____________
+	
+let colors=['red','blue','green'];
+for(let c of colors){
+    console.log(c);
+    
+}
+
+
+
+use of custome module
+________________
+
+Consider :
+________
+
+maths.js
+_________
+
+function add(a, b){
+    return a+b;
+}
+function diff(a, b){
+    return a-b;
+}
+function mul(a, b){
+    return a*b;
+}
+console.log(add(2,5));
+
+demo.js
+_______
+
+node second.js
+_____________
+console.log('hello')
+
+Now how to run maths method inside second.js?
+
+
+use require('./maths') in second.js
+
+require('./maths')
+console.log('hello')
+
+//console.log(add(2,5)); will throw error
+
+
+how to export funcation from one module to another modules?
+__________________________________
+module.export =add; in maths.js
+
+maths.js
+________
+function add(a, b){
+    return a+b;
+}
+function diff(a, b){
+    return a-b;
+}
+function mul(a, b){
+    return a*b;
+}
+module.exports =add;
+
+
+
+second.js
+_____________
+var addfun= require('./maths')
+console.log('hello')
+console.log(addfun(2,5));
+
+
+
+Now how to export multiple methods?
+________________________________
+
+module.exports ={
+    add,
+    diff,
+    mul
+ };
+
+// module.exports ={
+//    add: add,
+//    diff: diff,
+//    mul: mul
+// };
+
+Now inside second.js we will get object that contain all exported funcation from maths.js
+
+var mathsObs= require('./maths')
+console.log('hello')
+console.log(mathsObs.add(2,5));
+
+
+
+Another way to export :
+__________________
+module.exports.add=add;
+module.exports.diff=diff;
+module.exports.mul=mul;
+
+
+Short hand
+____________
+var exports =module.exports; is automatically added by node in maths.js
+
+we dnot need to repeate it
+
+exports.add=add;
+exports.diff=diff;
+exports.mul=mul;
+
+
+Note:
+_______
+function add(a, b){
+    return a+b;
+}
+exports =add; //it will not work
+
+
+
+var add= require('./maths')
+console.log('hello')
+console.log(add(2,5));
+
+
+Why?
+______
+node expected to put this in first line
+var exports =module.exports;
+
+so when we are saying exports =add; 
+
+we  are actually replacing exports with add rather then adding a property to module.exports
+
+Example module:
+__________
+
+circle.js
+_________
+var PI = Math.PI;
+
+exports.area = function (r) {
+  return PI * r * r;
+};
+exports.circumference = function (r) {
+  return 2 * PI * r;
+};
+
+
+
+second.js
+____________
+//How to use a module
+var circle = require('./circle.js');
+var area = circle.area(4);
+console.log( 'The area of a circle of radius 4 is '+ area);
+
+
+
+
+
+3. File writing
+________________
+
+third.js: writing to file
+__________
+
+var fs = require('fs');
+
+var data = 'Hello World!';
+
+fs.writeFile('test.txt', data, function (err) {
+  if (err) 
+	return console.log(err);
+  
+  console.log('Hello World > test.txt');
+});
+console.log('testing');
+
+
+test.txt
+--------
+Hello World!
+
+
+
+
+
+4. file writing
+______________
+
+
+fileread.js
+_____________
+var fs = require('fs');
+fs.readFile('test.txt', 'utf8', function (err,data) {
+  if (err) {
+    return console.log(err);
+  }
+  console.log(data);
+});
+
+
+reading file synch:
+________________
+var fs = require('fs');
+console.log('file reading starting');
+var data= fs.readFileSync('test.txt');
+console.log(data.toString());
+console.log('file reading finished');
+
+
+5. file reading and writing
+__________________________
+node filereadwrite.js
+
+
+var fs = require('fs');
+
+//Read from one file and write to other
+var srcPath = "text1.txt";
+var savPath = "text2.txt";
+
+	fs.readFile(srcPath, 'utf8', function (err, data) {
+            if (err) throw err;
+            
+            fs.writeFile (savPath, data, function(err) {
+                if (err) throw err;
+                console.log('complete');
+            });
+        });
+
+https://www.geeksforgeeks.org/node-js-fs-writefile-method/
+
+
+6. creating hello world server
+______________________________-
+node server.js
+
+killall -9 node
+
+server.js
+_________
+var http = require("http");
+
+var srvr = http.createServer(function (request, response) {
+	//console.log(request);
+	response.writeHead(200, {'Content-Type': 'text/plain'});
+	response.end('Hello World\n');
+
+});
+
+srvr.listen(8081);
+
+console.log('Server running at http://127.0.0.1:8081/');
+
+
+
+
+
+
+
+7. connecting with mysql
+_____________________
+
+npm install mysql
+
+
+checking connection:
+_____________________
+let mysql=require('mysql');
+let conn= mysql.createConnection({
+   host:"localhost" ,
+   user: "root",
+   password: "root",
+   database:"ymsdemo3"
+})
+
+conn.connect(function(err){
+    if(err) throw err;
+    console.log('connected')
+})
+
+printing all records:
+______________________
+
+conn.connect(function(err){
+    if(err) throw err;
+    console.log('connected')
+    conn.query("select * from emp_table", function(err, result, fields){
+        if(err) throw err;
+        for(let i=0; i<result.length; i++){
+            console.log(JSON.stringify(result[i]));
+        }
+        conn.end();
+    })
+})
+
+
+search an records:
+__________________
+
+conn.connect(function(err){
+    if(err) throw err;
+    console.log('connected')
+    let selectQuery= "select * from emp_table where name like '%raj%'"
+   
+    conn.query(selectQuery, function(err, result){
+        if(err) throw err;
+        for(let i=0; i<result.length; i++){
+            console.log(JSON.stringify(result[i]));
+        }
+        conn.end();
+    })
+    
+})
+
+
+inserting an record:
+______________________
+
+conn.connect(function(err){
+    if(err) throw err;
+    console.log('connected')
+    let insertQuery= "insert into emp_table(id, age,name) values('122',22,'amit')"
+    conn.query(insertQuery, function(err, result){
+        if(err) throw err;
+        console.log('inserted')
+	 conn.end();
+    })
+    
+})
+
+
+inserting multiple records:
+_____________________________
+
+conn.connect(function(err){
+    if(err) throw err;
+    console.log('connected')
+    let insertQuery= "insert into emp_table(id, age,name) values ?"
+    var records=[
+        ['46','32','foo'],
+        ['499','32','foo']
+    ];
+
+    conn.query(insertQuery,[records], function(err, result){
+        if(err) throw err;
+        console.log('inserted multiple rec')
+        conn.end();
+    })
+    
+})
+
+
+search record by passing value during query execution:
+_____________________________
+
+conn.connect(function(err){
+    if(err) throw err;
+    console.log('connected')
+    let id='122';
+    let selectQuery= 'select * from emp_table where id='+mysql.escape(id);
+    
+    conn.query(selectQuery, function(err, result){
+        if(err) throw err;
+        console.log(JSON.stringify(result));
+    
+        conn.end();
+    })
+    
+})
+
+
+Delete:
+_________
+
+conn.connect(function(err){
+    if(err) throw err;
+    console.log('connected')
+    let id='46';
+    let selectQuery= 'delete from emp_table where id='+mysql.escape(id);
+    
+    conn.query(selectQuery, function(err, result){
+        if(err) throw err;
+        console.log(JSON.stringify(result));
+        console.log(result.affectedRows);
+    
+        conn.end();
+    })
+    
+})
+
+
+update
+________
+
+conn.connect(function(err){
+    if(err) throw err;
+    console.log('connected')
+    let id='3';
+    let newAge=27;
+    let selectQuery= 'update emp_table set age='
+    +mysql.escape(newAge)+ ' where id='+mysql.escape(id);
+    
+    conn.query(selectQuery, function(err, result){
+        if(err) throw err;
+        console.log(result.affectedRows);
+        conn.end();
+    })
+    
+})
+
+
+
+8. NodeJs Express
+___________________
+
+	=> Express.js is a Node js web application server framework, 
+	which is specifically designed for building single-page, multi-page, and hybrid web applications.
+
+	=> It has become the standard server framework for node.js. 
+	Express is the backend part of something known as the MEAN stack.
+
+	MEAN STACK:
+	______________
+
+	1) MongoDB - The standard NoSQL database
+	2) Express.js - The default web applications framework
+	3) Angular- The JavaScript MVC framework used for web applications
+	4) Node.js - Framework used for scalable server-side and networking applications. 
+
+	Installation
+	_____________
+	npm install express
+
+
+
+	Need of Nodemon:
+	______________
+	similer to devtools(spring boot)
+
+	installation 
+	sudo npm install -g --force nodemon
+
+
+Hello world server:
+__________________
+
+demo.js
+_______
+
+let express=require('express')
+let app=express();
+
+app.get('/', function(req, resp){
+    resp.send('express js working!!')
+}).listen(4000);
+console.log('server is running')
+
+
+
+how to run : nodemon demo.js
+
+Example: routes:
+________________
+
+let express=require('express')
+let app=express();
+
+app.get('/', function(req, resp){
+    resp.send('express js working!!')
+})
+app.get('/home', function(req, resp){
+    resp.send('home')
+})
+app.get('/about', function(req, resp){
+    resp.send('about')
+})
+
+app.get('/admin', function(req, resp){
+    resp.send('admin')
+})
+
+app.get('/foo*bar', function(req, resp){
+    resp.send('admin')
+})
+
+app.post('/postdemo', function(req, resp){
+    resp.send('post')
+})
+
+app.listen(4000);
+console.log('server is running')
+
+
+Router parameter:
+_________________
+	is is possible to have roots with the parameter by specifing the parameters
+	in the path of the root itself. 
+
+	Root parameter help to retrive the values which are specified in the url
+
+	These values are store in the request params object along with the keys which is the name
+	of the root parameters 
+
+	Ex:
+
+app.get('/customers/:custId/orders/:orderId', function(req, resp){
+    resp.send(req.params)
+})
+
+
+
+Multiple route callback/ Handler functin:
+__________________________________________
+	It is possible to use more then one callback funcation that can act as 
+	"middleware" to handle client request. 
+
+	These functions may use next ('route') method to bypass the remaining route callback, this
+	can be implemented by encorce preconditions on the routes
+
+	middleware is just like servlet filter that is used to do some job before route is going to hit
+	it contain common functinality that need to run with routes
+
+https://expressjs.com/en/guide/writing-middleware.html
+
+
+Ex:
+____
+
+let express=require('express')
+let app=express();
+
+let checkUrl=function(req, resp, next){
+    console.log('current rounte is '+ req.originalUrl)
+    next();
+
+}
+app.use(checkUrl);
+
+app.get('/', function(req, resp){
+    resp.send('express js working!!')
+})
+app.get('/home', function(req, resp){
+    resp.send('home')
+})
+app.get('/about', function(req, resp){
+    resp.send('about')
+})
+app.listen(4000);
+console.log('server is running')
+
+
+Ex: COnfigure array of callback function to handle an route
+_____________________________________________________________
+
+let express=require('express')
+let app=express();
+
+let callback1=function(req, resp, next){
+    console.log('callback 1 function one executed '+ req.originalUrl)
+    next();
+}
+let callback2=function(req, resp, next){
+    console.log('callback 2 function one executed '+ req.originalUrl)
+    next();
+}
+
+app.get('/home',[callback1, callback2], function(req, resp){
+    resp.send('home')
+})
+
+app.listen(4000);
+console.log('server is running')
+
+
+
+
+How to run Middleware on an specific routes
+_____________________________________________
+let express=require('express')
+let app=express();
+const router= express.Router();
+
+
+let checkUrl=function(req, resp, next){
+    console.log('current rounte is '+ req.originalUrl)
+    next()
+}
+
+app.get('/', function(req, resp){
+    resp.send('express js working!!')
+})
+router.get('/login',checkUrl, function(req, resp){
+    resp.send('login')
+})
+app.get('/about', function(req, resp){
+    resp.send('about')
+})
+
+router.get('/admin',checkUrl, function(req, resp){
+    resp.send('admin')
+})
+
+app.post('/postdemo', function(req, resp){
+    resp.send('post')
+})
+app.use('/', router);
+app.listen(4200);
+console.log('server is running')
+
+
+
+How to put Middleware in sepreate file
+______________________________________
+
+middleware.js
+______________
+
+
+module.exports=function(req, resp, next){
+    console.log('current rounte is '+ req.originalUrl)
+    next()
+}
+
+server.js
+_________
+
+let express=require('express')
+let checkUrl=require('./middleware')
+let app=express();
+const router= express.Router();
+
+app.get('/', function(req, resp){
+    resp.send('express js working!!')
+})
+router.get('/login',checkUrl, function(req, resp){
+    resp.send('login')
+})
+app.get('/about', function(req, resp){
+    resp.send('about')
+})
+
+router.get('/admin',checkUrl, function(req, resp){
+    resp.send('admin')
+})
+
+app.post('/postdemo', function(req, resp){
+    resp.send('post')
+})
+app.use('/', router);
+app.listen(4200);
+console.log('server is running')
+
+
+sending html page:
+__________________
+app.get('/about', function(req, resp){
+    resp.sendFile(__dirname+'/about.html')
+})
+
+
+
+https://stackoverflow.com/questions/28305120/differences-between-express-router-and-app-get#:~:text=Router()%20is%20called%2C%20a,structure%20to%20the%20main%20app.
+
+https://stackoverflow.com/questions/31978347/fs-writefile-in-a-promise-asynchronous-synchronous-stuff/47361261
+
+https://www.guru99.com/node-js-tutorial.html
+https://stackoverflow.com/questions/50093144/mysql-8-0-client-does-not-support-authentication-protocol-requested-by-server
+
+

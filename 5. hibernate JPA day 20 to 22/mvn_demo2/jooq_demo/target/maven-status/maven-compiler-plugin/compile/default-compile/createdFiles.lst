@@ -1,0 +1,9 @@
+com/demo/example/HelloWorld.class
+com/hellokoding/jooq/model/tables/records/AuthorRecord.class
+com/demo/example/ConnectionFactory.class
+com/hellokoding/jooq/model/tables/Author.class
+com/hellokoding/jooq/model/Library.class
+com/hellokoding/jooq/model/Keys.class
+com/hellokoding/jooq/model/Tables.class
+com/hellokoding/jooq/model/DefaultCatalog.class
+com/hellokoding/jooq/model/Keys$UniqueKeys0.class

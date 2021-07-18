@@ -1,0 +1,1152 @@
+Microservices Architecture?
+_________________________
+
+	=> Microservices architecture allows to avoid monolith application for 
+	large system. 
+
+	=> It provide loose coupling between collaborating processes which running
+	 independently in different environments with tight cohesion.
+
+
+Adv MS?	:)
+____________
+
+	=> Smaller code base is easy to maintain.
+	=> Easy to scale as individual component.
+	=> Technology diversity i.e. we can mix libraries, databases, frameworks etc.
+	=> Fault isolation i.e. a process failure should not bring whole system down.
+	=> Better support for smaller and parallel team.
+	=> Independent deployment
+	=> Deployment time reduce
+
+Microservices Challenges	:(
+______________________
+
+	=> Difficult to achieve strong consistency across services
+	=> ACID transactions do not span multiple processes.
+	=> Distributed System so hard to debug and trace the issues
+	=> Greater need for end to end testing
+	=> Required cultural changes in across teams like Dev and Ops
+
+What is Spring Cloud?
+___________________
+	=> building blocks for Cloud and Microservices
+	=> provides microservices infrastructure like provide use services
+		 such as Service Discovery, Configuration server and Monitoring.
+	=>  provides several other open source projects like Netflix OSS.
+	=>  provides PaaS like Cloud Foundry, AWS and Heroku.
+	=>  uses Spring Boot style starters
+
+
+Various modules?
+__________________
+	=>  Cloud Integration
+	=>  Dynamic Reconfiguration
+	=>  Service Discovery
+	=> Client side Load Balancing 
+	......
+
+
+
+Service Discovery 
+_________________
+	How do services find each other?
+	What happens if we run multiple instances for a service
+	AKA yellow pages*
+
+	Eureka created by Netflix
+
+
+
+Client-side Load Balancing
+_________________________
+
+	Each service typically deployed as multiple instances for 
+	fault tolerance and load sharing. 
+
+	But there is problem how to decide which instance to use?
+
+	How do we decide which service instance to use?
+
+	 Netflix Ribbon, 
+
+	it provide several algorithm for Client-Side Load Balancing. 
+	Spring provide smart RestTemplate for service discovery and load balancing by using 		
+	@LoadBalanced annotation with RestTemplate instance.
+
+
+
+
+Steps:
+__________
+	1. Creating Discovery Service (Creating Eureka Discovery Service)
+
+	2. Creating MicroService (the Producer)
+	    Register itself with Discovery Service with logical service.
+
+	3. Create Microservice Consumers find Service registered with Discovery Service
+
+	4. Discovery client using a smart RestTemplate to find microservice.
+
+
+
+
+Spring cloud:
+_____________
+
+=> spring cloud config
+=> spring cloud netflix
+	=> netflix eureka
+	=> load balancing, ribbon
+	=> fault tolernace,Hystrix
+	=> zuul
+	
+
+
+coupon	: 8085
+customer: 8081
+product : 8082
+order: 8080
+eurekaserver: 8761
+
+Configuration eureka_server
+_____________________________
+
+step 1: create spring boot project: eurekaserver and devtool dependencies
+
+step 2: put in properties files
+
+spring.application.name=eureka
+eureka.client.register-with-eureka=false
+eureka.client.fetch-registry=false
+server.port=8761
+
+
+application.yml:
+________________
+spring:
+  application:
+    name: eureka
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+server:
+  port: 8761
+
+
+
+
+step 3: apply @EnableEurekaServer
+
+done!
+
+step 5: docker configuration:
+____________________
+
+change pom of project
+<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<image>
+						<name>rajiv2018/ms-${project.artifactId}:${project.version}</name>
+					</image>
+					<pullPolicy>IF_NOT_PRESENT</pullPolicy>
+				</configuration>				
+			</plugin>
+		</plugins>
+	</build>
+
+
+step 6: run spring boot project with option:
+____________________________________
+spring-boot:build-image -DskipTests
+
+step 7:docker run -p 8761:8761 rajiv2018/ms-eureka:1.0
+
+step 8: check eureka service is running on port 8761
+
+
+
+Configuration eureka service: customer
+_______________________________________
+
+step 1: create spring boot project: eurekaclient and devtool, actuator dependencies, web
+
+step 2: put in properties files
+
+spring.application.name=customer-service
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka
+server.port=8081
+
+server:
+  port: 8081
+spring:
+  application:
+    name: customer-service 
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+
+
+step 3: apply @EnableEurekaClient
+
+step 4: create hello world rest controller
+
+
+@RestController
+public class CustomerController {
+	
+	@RequestMapping("/customer")
+	public String HelloWorld() {
+		return "customer information ....";
+	}
+
+}
+
+done!
+
+docker configuration:
+____________________
+
+change pom of project
+<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<image>
+						<name>rajiv2018/ms-${project.artifactId}:${project.version}</name>
+					</image>
+					<pullPolicy>IF_NOT_PRESENT</pullPolicy>
+				</configuration>				
+			</plugin>
+		</plugins>
+	</build>
+
+
+run spring boot project with option:
+____________________________________
+spring-boot:build-image -DskipTests
+
+	it will create imaage .... now run image
+
+docker run -p 8081:8081 rajiv2018/ms-customer:1.0
+
+
+
+Docker compose :
+________________
+=> running each project like this is not easy
+=> multi container docker application can be easily configure usiing docker compose
+
+docker-compose.yaml
+___________________
+
+version: '3'
+services:
+  customer:
+    image: rajiv2018/ms-customer:1.0
+    ports:
+      - "8081:8081"
+    networks:
+      - ms-network
+networks:
+  ms-network:
+
+how to run:
+___________
+docker-compose up
+
+
+
+
+
+docker-compose with eureka service
+___________________
+
+version: '3'
+services:
+  customer:
+    image: rajiv2018/ms-customer:1.0
+    ports:
+      - "8081:8081"
+    networks:
+      - ms-network
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://eureka-server:8761/eureka
+
+  eureka-server:
+    image: rajiv2018/ms-eureka:1.0
+    ports:
+      - "8761:8761"
+    networks:
+      - ms-network
+networks:
+  ms-network:
+
+how to run:
+___________
+docker-compose up
+
+
+
+
+
+
+
+Configuration eureka service: product
+________________________________________
+
+server:
+  port: 8082
+spring:
+  application:
+    name: product-service 
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+
+@RestController
+public class ProductController {
+	
+	@RequestMapping("/product")
+	public String HelloWorld() {
+		return "product information...instance 1";
+	}
+
+}
+
+
+
+docker-compose with eureka service
+___________________
+
+version: '3'
+services:
+  customer:
+    image: rajiv2018/ms-customer:1.0
+    ports:
+      - "8081:8081"
+    networks:
+      - ms-network
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://eureka-server:8761/eureka
+  product:
+    image: rajiv2018/ms-product:1.0
+    ports:
+      - "8082:8082"
+    networks:
+      - ms-network
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://eureka-server:8761/eureka
+  eureka-server:
+    image: rajiv2018/ms-eureka:1.0
+    ports:
+      - "8761:8761"
+    networks:
+      - ms-network
+networks:
+  ms-network:
+
+how to run:
+___________
+docker-compose up
+
+
+
+
+
+
+
+ service: product running instance 2:
+________________________________
+
+
+step 3: apply @EnableEurekaClient
+
+
+
+@RestController
+public class ProductController {
+	
+	@RequestMapping("/product")
+	public String HelloWorld() {
+		return "product information...instance 2";
+	}
+
+}
+
+
+
+update docker-compose with eureka service
+___________________
+ product2:
+    image: rajiv2018/ms-product2:1.0
+    ports:
+      - "8083:8083"
+    networks:
+      - ms-network
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://eureka-server:8761/eureka
+
+how to run:
+___________
+docker-compose up
+
+
+creating order-service : 
+_______________________
+
+dependencies:
+	web, devtools, actu
+	actuator, 
+	eureka-client,
+	 hystrix, 
+	hystrix-dashboard
+
+
+Client side load balancing: ribbon
+_________________________
+	=> client side load balancing 
+	=> @LoadBalanced: used to create enhanced rest templete with inbuild load balancing
+	 
+
+
+@EnableEurekaClient
+@SpringBootApplication
+public class OrderApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(OrderApplication.class, args);
+	}
+	@Bean
+	@LoadBalanced
+	public RestTemplate getTemplate() {
+		return new RestTemplate();
+	}
+}
+
+
+
+
+
+step 4:
+@RestController
+public class OrderController {
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	@RequestMapping("/order")
+	public String callService() {
+		String customerInfo= 
+				restTemplate.getForEntity("http://localhost:8081/customer", String.class).getBody();
+		String productInfo= 
+				restTemplate.getForEntity("http://localhost:8082/product", String.class).getBody();
+		
+		return customerInfo.concat(" ").concat(productInfo);
+	}
+
+}
+
+
+
+---------------------------
+
+@RestController
+public class OrderController {
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	@RequestMapping("/order")
+	public String callService() {
+		String customerInfo= 
+				restTemplate.getForEntity("http://customer-service/customer", String.class).getBody();
+		String productInfo= 
+				restTemplate.getForEntity("http://product-service/product", String.class).getBody();
+		
+		return customerInfo.concat(" ").concat(productInfo);
+	}
+
+}
+
+application.yml:
+________________
+
+server:
+  port: 8080
+spring:
+  application:
+    name: order-service
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+update docker compose file:
+__________________________
+  order:
+    image: rajiv2018/ms-order:1.0
+    ports:
+      - "8080:8080"
+    networks:
+      - ms-network
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://eureka-server:8761/eureka
+
+
+
+
+
+update pom:
+_____________
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<image>
+						<name>rajiv2018/ms-${project.artifactId}:${project.version}</name>
+					</image>
+					<pullPolicy>IF_NOT_PRESENT</pullPolicy>
+				</configuration>				
+			</plugin>
+		</plugins>
+	</build>
+
+
+
+
+Hystrix fault tolerance:
+_____________________
+
+step1 : enable hystrix:
+_____________________
+
+@EnableEurekaClient
+@SpringBootApplication
+@EnableHystrix
+public class OrderApplication {
+	//.......
+}
+
+
+
+step 2: applying fault handling:
+_______________________________-
+
+	@RequestMapping("/order")
+	@HystrixCommand(fallbackMethod = "defaultproduct")
+	public String callService() {
+
+		String customerInfo = restTemplate.getForEntity("http://customer-service/customer", String.class).getBody();
+		String productInfo = restTemplate.getForEntity("http://product-service/product", String.class).getBody();
+
+		return customerInfo.concat(" ").concat(productInfo);
+	}
+
+	public String defaultproduct() {
+		return "default product";
+	}
+
+
+
+
+
+Refactoring hystrix:
+___________________
+
+@RestController
+public class OrderController {
+
+	@Autowired
+	private RestTemplate restTemplate;
+
+
+	@RequestMapping("/order")
+	public String callService() {
+		String customerInfo = getCustomerInfo();
+		String productInfo = getProductInfo();
+		return customerInfo.concat(" ").concat(productInfo);
+	}
+
+	public String getProductInfoFallBack() {
+		return "default product";
+	}
+	
+	@HystrixCommand(fallbackMethod = "getProductInfoFallBack")
+	public String getProductInfo() {
+		String productInfo = restTemplate.getForEntity("http://product-service/product", String.class).getBody();
+		return productInfo;
+	}
+	
+	@HystrixCommand(fallbackMethod = "getCustomerInfoFallback")
+	public String getCustomerInfo() {
+		String customerInfo = restTemplate.getForEntity("http://customer-service/customer", String.class).getBody();
+		return customerInfo;
+	}
+
+	public String getCustomerInfoFallback() {
+		return "default customer information";
+	}
+
+	
+}
+
+
+ => this will not work:fallback dont work
+ Why: 
+	Hystrix create a proxy class ie a wrapper on instance of api class 
+	When we call /order method, proxy comes into picture, spring wrap our method call
+
+	Now we are calling methods inside our api call hence hystrix can not apply aop onto that
+
+
+Sol:
+	We have to create a new class (Spring service) that contains methods with fallback method 
+
+hystrix apply AOP proxy on the method
+
+
+
+@RestController
+public class OrderController {
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	@Autowired
+	private CustomerService customerService;
+	
+	@Autowired
+	private ProductService productService;
+	
+	@RequestMapping("/order")
+	public String callService() {
+		String customerInfo = customerService.getCustomerInfo();
+		String productInfo = productService.getProductInfo();
+		return customerInfo.concat(" ").concat(productInfo);
+	}
+}
+
+
+
+
+@Service
+public class ProductService {
+	
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	public String getProductInfoFallBack() {
+		return "default product";
+	}
+	
+	@HystrixCommand(fallbackMethod = "getProductInfoFallBack")
+	public String getProductInfo() {
+		String productInfo = restTemplate.getForEntity("http://product-service/product", String.class).getBody();
+		return productInfo;
+	}
+}
+
+
+
+
+@Service
+public class CustomerService {
+
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	@HystrixCommand(fallbackMethod = "getCustomerInfoFallback")
+	public String getCustomerInfo() {
+		String customerInfo = restTemplate.getForEntity("http://customer-service/customer", String.class).getBody();
+		return customerInfo;
+	}
+
+	public String getCustomerInfoFallback() {
+		return "default customer information";
+	}
+}
+
+
+
+fine tune fault handling:
+___________________________
+
+	@RequestMapping("/order")
+	@HystrixCommand(fallbackMethod = "defaultproduct", commandProperties =
+	{
+			@HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "3000"),
+	        @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "5"),
+	        @HystrixProperty(name = "circuitBreaker.sleepWindowInMilliseconds", value = "5000"),
+	        @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "5000")
+	})
+
+
+
+
+
+management.endpoint.hystrix.stream.enabled=true
+management.endpoints.web.exposure.include=hystrix.stream, info, health
+management.endpoints.web.base-path=/
+
+@EnableHystrixDashboard
+public class OrderApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(OrderApplication.class, args);
+	}
+}
+
+https://stackoverflow.com/questions/49792290/unable-to-connect-to-command-metric-stream-for-hystrix-dashboard-with-spring-clo
+
+
+
+Zuul api gateway: single entry point ccc
+_______________________________________
+
+Need of api gateway?
+___________________
+Separation between clients and microservices
+Simplified clients
+Any change in location of microservices is not going to affect the clients
+Optimal API for each client as per requirement
+
+
+server:
+  port: 8100
+spring:
+  application:
+    name: api-gateway
+zuul:
+  routes:
+    customer-service:
+     url: customer-service
+    product-service:
+     url: product-service
+    order-service:
+     url: order-service
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+
+
+Now configure zuul proxy server:
+________________________________
+
+api-gateway: dependencies: web, zuul, devtools, actuator
+
+
+@EnableZuulProxy
+@SpringBootApplication
+public class GatewayApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(GatewayApplication.class, args);
+	}
+
+}
+
+application.yml:
+______________
+
+server:
+  port: 8100
+spring:
+  application:
+    name: api-gateway
+zuul:
+  routes:
+    customer-service:
+     url: http://localhost:8081
+    product-service:
+     url: http://localhost:8082
+    order-service:
+     url: http://localhost:8080
+
+
+application.yml with eureka client
+______________
+
+server:
+  port: 8100
+spring:
+  application:
+    name: api-gateway
+zuul:
+  routes:
+    customer-service:
+     url: customer-service
+    product-service:
+     url: product-service
+    order-service:
+     url: order-service
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+
+
+Now run custoemr-service with zuul proxy:
+------------------------------
+http://localhost:8100/customer-service/customer
+http://localhost:8100/product-service/product
+http://localhost:8100/order-service/order
+
+
+
+
+
+zuul filters:
+_____________
+pre, post ,error filtes
+
+
+pre filter:
+____________
+
+@Configuration
+public class PreFilter extends ZuulFilter{
+	private static Logger log = LoggerFactory.getLogger(PreFilter.class);
+
+    @Override
+    public String filterType() {
+        return "pre";
+    }
+
+    @Override
+    public int filterOrder() {
+        return 1;
+    }
+
+    @Override
+    public boolean shouldFilter() {
+        return true;
+    }
+
+    @Override
+    public Object run() {
+        RequestContext ctx = RequestContext.getCurrentContext();
+        HttpServletRequest request = ctx.getRequest();
+        log.info("Request method = {}, url = {}", request.getMethod(), request.getRequestURL().toString());
+        return null;
+    }
+}
+
+
+post filter:
+____________
+@Configuration
+public class Postfilter extends ZuulFilter {
+    private static Logger log = LoggerFactory.getLogger(Postfilter.class);
+
+    @Override
+    public String filterType() {
+        return "post";
+    }
+
+    @Override
+    public int filterOrder() {
+        return 1;
+    }
+
+    @Override
+    public boolean shouldFilter() {
+        return true;
+    }
+
+    @Override
+    public Object run() {
+        RequestContext ctx = RequestContext.getCurrentContext();
+
+        HttpServletResponse response = ctx.getResponse();
+        //ctx.getResponse().setStatus(500);
+        log.info("Response  Status= {}", response.getStatus());
+
+        try (InputStream is = ctx.getResponseDataStream()) {
+            String respData = CharStreams.toString(new InputStreamReader(is, CharEncoding.UTF_8));
+            log.info("Response  Data = {}", respData);
+            ctx.setResponseBody(respData);
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+        return null;
+    }
+}
+
+
+
+error filter:
+___________
+
+@Configuration
+public class Errorfilter extends ZuulFilter {
+    private static Logger log = LoggerFactory.getLogger(Errorfilter.class);
+    @Override
+    public String filterType() {
+        return "error";
+    }
+    @Override
+    public int filterOrder() {
+        return 1;
+    }
+    @Override
+    public boolean shouldFilter() {
+        return true;
+    }
+    @Override
+    public Object run() {
+        RequestContext ctx = RequestContext.getCurrentContext();
+
+        String response = ctx.getResponseBody();
+        log.info("Error occurred, Response  = {}, ", response);
+        return null;
+    }
+}
+
+
+
+route filter:
+__________
+
+@Configuration
+public class Routefilter extends ZuulFilter {
+    private static Logger log = LoggerFactory.getLogger(Routefilter.class);
+    @Override
+    public String filterType() {
+        return "route";
+    }
+    @Override
+    public int filterOrder() {
+        return 1;
+    }
+    @Override
+    public boolean shouldFilter() {
+        return true;
+    }
+    @Override
+    public Object run() {
+
+        log.info("Inside route filter..");
+        return null;
+    }
+}
+
+
+Management Endpoints:
+___________________
+Netflix Zuul Actuator endpoints 
+
+Enable endpoints:
+---------------
+management: 
+  endpoints: 
+    web: 
+      exposure: 
+        include: '*'
+
+
+we are intrested in filters and rountes
+
+http://localhost:8100/actuator/filters
+http://localhost:8100/actuator/routes
+
+
+ref:
+	https://cloud.spring.io/spring-cloud-netflix/multi/multi__router_and_filter_zuul.html#_management_endpoints
+
+
+
+Zuul configure timeout:
+____________________
+
+if our service is taking too much time we can configure zuul time out and it throw some exceptions
+
+
+
+@RestController
+public class ProductController {	
+	@RequestMapping("/product")
+	public String HelloWorld() {
+		try {
+			Thread.sleep(20000);
+		}catch(InterruptedException ex) {
+			ex.printStackTrace();
+		}
+		return "product information...instance 1";
+	}
+
+Now we will configure timeout for whole project using zuul configuration:
+_____________________________________________________________________
+
+zuul:
+  routes:
+    customer-service:
+     url: http://localhost:8081
+    product-service:
+     url: http://localhost:8082
+    order-service:
+     url: http://localhost:8080
+  host:
+    connect-timeout-millis: 2000
+    socket-timeout-millis: 5000
+
+
+
+Zuul + security on api gateway level:
+_______________________________________
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+
+@Configuration
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http. authorizeRequests().
+                antMatchers("/order-service/**").
+                authenticated().
+                anyRequest().
+                permitAll();
+    }
+}
+
+
+cloud gatway	: better alternative of zuul api gateway
+_______________________________________________________
+
+https://www.javainuse.com/spring/cloud-gateway
+
+
+
+
+server:
+  port: 8100
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: customerModule
+        uri: http://localhost:8081/
+        predicates:
+        - Path=/customer/**
+      - id: productModule
+        uri: http://localhost:8083/
+        predicates:
+        - Path=/product/**
+      - id: orderModule
+        uri: http://localhost:8080/
+        predicates:
+        - Path=/order/**
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+
+server:
+  port: 8100
+spring:
+  application:
+    name: spring-cloud-gateway
+  cloud:
+    gateway:
+      routes:
+      - id: customerModule
+        uri:  lb://CUSTOMER-SERVICE
+        predicates:
+        - Path=/customer/**
+      - id: productModule
+        uri:  lb://PRODUCT-SERVICE
+        predicates:
+        - Path=/product/**
+      - id: orderModule
+        uri:  lb://ORDER-SERVICE
+        predicates:
+        - Path=/order/**
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Feign
+___________
+The Feign is a declarative web service (HTTP client) developed by Netflix. 
+Its aim is to simplify the HTTP API clients. It is a Java to HTTP client binder. 
+If you want to use Feign, create an interface, and annotate it. 
+
+
+It is a library for creating REST API clients. It makes web service clients easier. 
+The developers can use declarative annotations to call the REST services instead of writing representative boilerplate code.
+
+
+
+
+Example:
+https://jsonplaceholder.typicode.com/users
+
+https://www.javatpoint.com/using-feign-rest-client-for-service-invocation
+https://stackoverflow.com/questions/46884362/what-are-the-advantages-and-disadvantages-of-using-feign-over-resttemplate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

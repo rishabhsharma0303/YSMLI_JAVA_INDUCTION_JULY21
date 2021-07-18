@@ -1,0 +1,2 @@
+node third.js
+pause

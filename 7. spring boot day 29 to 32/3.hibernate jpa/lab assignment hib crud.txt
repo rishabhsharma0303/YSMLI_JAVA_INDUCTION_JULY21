@@ -1,0 +1,25 @@
+Lab assignment: crud application for product using hibernate:
+______________________________________________
+class Product{
+	id
+	name
+	price
+	discount
+	qty
+
+}
+
+HibernateFactory
+
+ProductDao
+
+ProductDaoImpl
+
+ProductService
+
+ProductServiceImpl
+
+ProductNotFoundException
+
+
+	controller ---------- service ------------- persitance -----hibernat fac----------db

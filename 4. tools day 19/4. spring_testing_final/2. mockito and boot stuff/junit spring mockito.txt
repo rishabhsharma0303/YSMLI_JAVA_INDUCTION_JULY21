@@ -1,0 +1,369 @@
+junit mock testing:
+-----------------
+
+Basic concepts:
+------------
+
+Unit testing:
+------------
+	where any given test covers the smallest unit of a program (a function or procedure).
+	 It may or may not take some input parameters and may or may not return some values.
+
+Integration testing:
+--------------
+	 where individual units are tested together to check whether all the
+	 units interact with each other as expected.
+
+
+
+Integration testing example:
+----------------------------
+
+@ContextConfiguration(locations = "classpath:model-config.xml")
+@RunWith(SpringJUnit4ClassRunner.class)// SpringRunner.class
+public class BookDaoImplTest {
+
+	@Autowired
+	private BookService bookService;
+
+	@Test
+	@Transactional
+	@Rollback(false)
+	public void testAddDepartment() {
+		Book book=new Book("QW12", "spring", "ekta", new Date(), 500);
+		bookService.addBook(book);
+		System.out.println(bookService.getAllBooks().size());
+	}
+
+}
+
+
+
+
+
+What is Mocking and When Does It Come into the Picture?
+-------------------------------------------------------
+	What if we want to test service layer without completion of dao layer?
+	What if we want to test one service which depend on an service available on other application?
+
+	
+	=> mockito used for mocking
+
+getting started:
+------------------
+
+maven dependencies:
+--------------------
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>1.10.19</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+
+
+Why mockito?
+-----------
+
+
+public interface BookDao {
+	public List<String> getBooks();
+}
+
+
+public class BookDaoImpl implements BookDao {
+	@Override
+	public List<String> getBooks() {
+		return Arrays.asList("java","rich dad poor dad","java adv");
+	}
+}
+
+
+public interface BookService {
+	public List<String> getBooks(String subject);
+}
+
+
+
+public class BookServiceImpl implements BookService {
+	private BookDao bookDao;
+
+	public void setBookDao(BookDao bookDao) {
+		this.bookDao = bookDao;
+	}
+
+	@Override
+	public List<String> getBooks(String subject) {
+		return bookDao.getBooks().stream().filter(title -> title.contains(subject)).collect(Collectors.toList());
+	}
+
+}
+
+
+
+
+
+import org.junit.Assert; 
+
+
+public class DemoTest {
+
+	@Test
+	public void getBookTest() {
+		BookDao dao=new BookDaoImpl();
+		
+		BookServiceImpl bookService=new BookServiceImpl();
+		bookService.setBookDao(dao);
+		List<String> books=bookService.getBooks("java");
+		Assert.assertEquals(2, books.size());
+	}
+}
+
+
+
+
+
+
+Useful Snippets and References
+Easier Static Imports
+
+Window > Preferences > Java > Editor > Content Assist > Favorites
+
+org.junit.Assert
+org.mockito.BDDMockito
+org.mockito.Mockito
+org.hamcrest.Matchers
+org.hamcrest.CoreMatchers
+
+
+mockito hello world:
+----------------------
+
+public class DemoTest {
+
+	@Test
+	public void getBookTest() {
+		
+		BookDao dao=mock(BookDao.class);
+		
+		List<String> allbooks=Arrays.asList("java","rich dad poor dad","java adv");
+		
+		when(dao.getBooks()).thenReturn(allbooks);
+		
+		BookServiceImpl bookService=new BookServiceImpl();
+		bookService.setBookDao(dao);
+		List<String> books=bookService.getBooks("java");
+		Assert.assertEquals(2, books.size());
+	}
+}
+
+
+Improvement 1:
+--------------
+
+public class DemoTest2 {
+
+	BookDao dao = mock(BookDao.class);
+	
+	BookServiceImpl bookService = new BookServiceImpl();
+
+	@Before
+	public void before() {
+		List<String> allbooks = Arrays.asList("java", "rich dad poor dad", "java adv");
+
+		when(dao.getBooks()).thenReturn(allbooks);
+		BookDao dao = mock(BookDao.class);
+	}
+
+	@Test
+	public void getBookTest() {
+
+		bookService.setBookDao(dao);
+		List<String> books = bookService.getBooks("java");
+		Assert.assertEquals(2, books.size());
+	}
+}
+
+
+
+mockito with annotations:
+----------------------
+
+@RunWith(MockitoJUnitRunner.class)
+public class DemoTest2 {
+
+	@InjectMocks
+	BookServiceImpl bookService = new BookServiceImpl(); //even we dont need to create object
+
+	
+	@Mock
+	BookDao dao;
+	
+
+	@Before
+	public void before() {
+		List<String> allbooks = Arrays.asList("java", "rich dad poor dad", "java adv");
+
+		when(dao.getBooks()).thenReturn(allbooks);
+		
+	}
+
+	@Test
+	public void getBookTest() {
+
+		bookService.setBookDao(dao);
+		List<String> books = bookService.getBooks("java");
+		Assert.assertEquals(2, books.size());
+	}
+}
+
+
+
+MockitoAnnotations.initMocks(this) vs @RunWith(MockitoJUnitRunner.class)
+
+Note:
+----
+Mockito cannot mock or spy on Java constructs such as final classes and
+methods, static methods, enums, private methods, the equals() and
+hashCode() methods, primitive types, and anonymous classes
+
+
+
+Partial Mocking: @Spy
+--------------------
+  When we want an object in the test class to mock some method(s),
+ but also call some actual method(s), then we need partial mocking. 
+  This is achieved via @Spy
+
+	Unlike using @Mock, with @Spy, a real object is created, 
+	but the methods of that object can be mocked or can be actually called—whatever we need.
+
+
+
+
+
+
+
+Example:
+--------
+@Repository
+public class BookDaoImpl implements BookDao {
+	@Override
+	public List<String> getBooks() {
+		log();
+		return null;
+	}
+
+	public void log() {
+		System.out.println("----------");
+	}
+}
+
+
+
+@RunWith(MockitoJUnitRunner.class)
+public class DemoTest {
+
+	@Spy
+	BookDaoImpl dao;
+	
+	@InjectMocks
+	BookServiceImpl bookService;
+
+	// when tested log() method is going to be called.....
+
+}
+
+
+A few mockito examples mocking List class
+-----------------------------------------
+
+public class ListTest {
+
+	@Test
+	public void letsMockListSize() {
+		List list = mock(List.class);
+		Mockito.when(list.size()).thenReturn(10);
+		assertEquals(10, list.size());
+	}
+
+	@Test
+	public void letsMockListSizeWithMultipleReturnValues() {
+		List list = mock(List.class);
+		Mockito.when(list.size()).thenReturn(10).thenReturn(20);
+		assertEquals(10, list.size()); // First Call
+		assertEquals(20, list.size()); // Second Call
+	}
+
+	@Test
+	public void letsMockListGet() {
+		List<String> list = mock(List.class);
+		Mockito.when(list.get(0)).thenReturn("javatraining");
+		assertEquals("javatraining", list.get(0));
+		assertNull(list.get(1));
+	}
+
+	@Test
+	public void letsMockListGetWithAny() {
+		List<String> list = mock(List.class);
+		Mockito.when(list.get(Mockito.anyInt())).thenReturn("javatraining");
+		// If you are using argument matchers, all arguments
+		// have to be provided by matchers.
+		assertEquals("javatraining", list.get(0));
+		assertEquals("javatraining", list.get(1));
+	}
+
+}
+
+
+hello world unit testing spring mvc controller:
+-----------------------------------
+@Controller
+public class Hello {
+	@GetMapping("/hello")
+	public String hello(ModelMap model) {
+		model.addAttribute("name", "hello world");
+		return "helloview";
+
+	}
+}
+
+
+
+
+
+public class HelloTest {
+
+	@InjectMocks
+	private Hello hello;
+
+	private MockMvc mockMvc;
+
+	@Before
+	public void setup() {
+		MockitoAnnotations.initMocks(this);
+		this.mockMvc = MockMvcBuilders.standaloneSetup(hello).build();
+	}
+
+	@Test
+	public void testCreateSignupFormInvalidUser() throws Exception {
+		this.mockMvc.perform(get("/hello")).andExpect(status().isOk());
+	}
+
+}
+
+
+
+
+https://www.toptal.com/java/unit-integration-junit-tests
+
