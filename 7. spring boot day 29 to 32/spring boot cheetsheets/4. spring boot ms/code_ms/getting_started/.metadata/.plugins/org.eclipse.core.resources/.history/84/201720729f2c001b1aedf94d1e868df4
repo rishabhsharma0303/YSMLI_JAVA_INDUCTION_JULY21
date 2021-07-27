@@ -1,9 +1,0 @@
-@RestController
-public class ProductController {
-	
-	@RequestMapping("/product")
-	public String HelloWorld() {
-		return "product information...instance 1";
-	}
-
-}
